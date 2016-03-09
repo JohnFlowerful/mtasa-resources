@@ -128,6 +128,9 @@ end
 addEventHandler('onResourceStart', g_ResRoot,
 	function()
 		table.each(getElementsByType('player'), joinHandler)
+        if getOption('handletext') then
+            addEventHandler('onPlayerChat', g_Root)
+        end
 	end
 )
 
@@ -135,10 +138,12 @@ function joinHandler(player)
 	if not player then
 		player = source
 	end
-	local r, g, b = math.random(50, 255), math.random(50, 255), math.random(50, 255)
-	setPlayerNametagColor(player, r, g, b)
-	g_PlayerData[player] = { vehicles = {} }
-	g_PlayerData[player].blip = createBlipAttachedTo(player, 0, 2, r, g, b)
+    g_PlayerData[player] = { vehicles = {} }
+    if getOption('handleblips') then
+        local r, g, b = math.random(50, 255), math.random(50, 255), math.random(50, 255)
+        setPlayerNametagColor(player, r, g, b)
+    	g_PlayerData[player].blip = createBlipAttachedTo(player, 0, 2, r, g, b)
+    end
 	if g_FrozenTime then
 		clientCall(player, 'setTimeFrozen', true, g_FrozenTime[1], g_FrozenTime[2], g_FrozenWeather)
 	end
@@ -426,28 +431,26 @@ function fadeVehiclePassengersCamera(toggle)
 	end
 end
 
-addEventHandler('onPlayerChat', g_Root,
-	function(msg, type)
-		if type == 0 then
-			cancelEvent()
-			if chatTime[source] and chatTime[source] + tonumber(get("*chat/mainChatDelay")) > getTickCount() then
-				outputChatBox("Stop spamming main chat!", source, 255, 0, 0)
-				return
-			else
-				chatTime[source] = getTickCount()
-			end
-			if get("*chat/blockRepeatMessages") == "true" and lastChatMessage[source] and lastChatMessage[source] == msg then
-				outputChatBox("Stop repeating yourself!", source, 255, 0, 0)
-				return
-			else
-				lastChatMessage[source] = msg
-			end
-			local r, g, b = getPlayerNametagColor(source)
-			outputChatBox(getPlayerName(source) .. ': #FFFFFF' .. msg:gsub('#%x%x%x%x%x%x', ''), g_Root, r, g, b, true)
-			outputServerLog( "CHAT: " .. getPlayerName(source) .. ": " .. msg )
+function playerChat(msg, type)
+	if type == 0 then
+		cancelEvent()
+		if chatTime[source] and chatTime[source] + tonumber(get("*chat/mainChatDelay")) > getTickCount() then
+			outputChatBox("Stop spamming main chat!", source, 255, 0, 0)
+			return
+		else
+			chatTime[source] = getTickCount()
 		end
+		if get("*chat/blockRepeatMessages") == "true" and lastChatMessage[source] and lastChatMessage[source] == msg then
+			outputChatBox("Stop repeating yourself!", source, 255, 0, 0)
+			return
+		else
+			lastChatMessage[source] = msg
+		end
+		local r, g, b = getPlayerNametagColor(source)
+		outputChatBox(getPlayerName(source) .. ': #FFFFFF' .. msg:gsub('#%x%x%x%x%x%x', ''), g_Root, r, g, b, true)
+		outputServerLog( "CHAT: " .. getPlayerName(source) .. ": " .. msg )
 	end
-)
+end
 
 addEventHandler('onVehicleEnter', g_Root,
 	function(player, seat)
@@ -472,7 +475,7 @@ addEventHandler('onVehicleEnter', g_Root,
 function setMyPos(x, y, z)
 	if not isElement(client) or getElementType(client) ~= "player" then
 		return
-	end 
+	end
 
 	local veh = getPedOccupiedVehicle (client)
 	if veh then

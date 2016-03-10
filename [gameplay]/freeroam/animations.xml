@@ -1622,6 +1622,28 @@
 		<anim name="sc_ltor" />
 		<anim name="sc_rtol" /> 
 	</group>
+	<group name="SEX">
+		<anim name="SEX_1to2_P" /> 
+		<anim name="SEX_1to2_W" /> 
+		<anim name="SEX_1_Cum_P" /> 
+		<anim name="SEX_1_Cum_W" /> 
+		<anim name="SEX_1_Fail_P" /> 
+		<anim name="SEX_1_Fail_W" /> 
+		<anim name="SEX_1_P" /> 
+		<anim name="SEX_1_W" /> 
+		<anim name="SEX_2to3_P" /> 
+		<anim name="SEX_2to3_W" /> 
+		<anim name="SEX_2_Fail_P" /> 
+		<anim name="SEX_2_Fail_W" /> 
+		<anim name="SEX_2_P" /> 
+		<anim name="SEX_2_W" /> 
+		<anim name="SEX_3to1_P" /> 
+		<anim name="SEX_3to1_W" /> 
+		<anim name="SEX_3_Fail_P" /> 
+		<anim name="SEX_3_Fail_W" /> 
+		<anim name="SEX_3_P" /> 
+		<anim name="SEX_3_W" /> 
+	</group>
 	<group name="SHAMAL">
 		<anim name="SHAMAL_align" />
 		<anim name="SHAMAL_getin_LHS" />

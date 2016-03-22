@@ -46,7 +46,7 @@
 		
 		<setting name="*spawnmaponstart" value="true" />
 		<setting name="*spawnmapondeath" value="true" />
-		<setting name="*handleblips" value="false"
+		<setting name="*handleblips" value="true"
 					friendlyname="Handle player blips"
 					accept="true,false"
 					group="Misc"
@@ -57,7 +57,7 @@
 					accept="true,false"
 					group="Misc"
 					/>
-		<setting name="*handlechat" value="false"
+		<setting name="*handlechat" value="true"
 					friendlyname="Handle player chat"
 					accept="true,false"
 					group="Misc"

@@ -128,8 +128,8 @@ end
 addEventHandler('onResourceStart', g_ResRoot,
 	function()
 		table.each(getElementsByType('player'), joinHandler)
-        if getOption('handletext') then
-            addEventHandler('onPlayerChat', g_Root)
+        if getOption('*handlechat') then
+            addEventHandler('onPlayerChat', g_Root, playerChat)
         end
 	end
 )

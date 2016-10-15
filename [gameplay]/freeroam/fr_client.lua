@@ -1089,7 +1089,7 @@ wndCreateVehicle = {
 	}
 }
 
-function createVehicleCommand(cmd, ...)
+--[[function createVehicleCommand(cmd, ...)
 	local vehID
 	local vehiclesToCreate = {}
 	local args = { ... }
@@ -1101,6 +1101,24 @@ function createVehicleCommand(cmd, ...)
 		if vehID then
 			table.insert(vehiclesToCreate, math.floor(vehID))
 		end
+	end
+	server.giveMeVehicles(vehiclesToCreate)
+end]]
+function createVehicleCommand(cmd, a, b, c) -- we don't need to spawn multiple vehicles
+	local vehID
+	local vehiclesToCreate = {}
+	vehID = tonumber(a)
+	if not vehID then
+		if c then
+			vehID = getVehicleModelFromName(a..' '..b..' '..c)
+		elseif b then
+			vehID = getVehicleModelFromName(a..' '..b)
+		else
+			vehID = getVehicleModelFromName(a)
+		end
+	end
+	if vehID then
+		table.insert(vehiclesToCreate, math.floor(vehID))
 	end
 	server.giveMeVehicles(vehiclesToCreate)
 end

@@ -1,4 +1,4 @@
-﻿--[[**********************************
+--[[**********************************
 *
 *	Multi Theft Auto - Admin Panel
 *
@@ -821,28 +821,56 @@ addEventHandler ( "aPlayer", _root, function ( player, action, data, additional,
 		if ( action == "kick" ) then
 			local reason = data or ""
 			mdata = reason~="" and ( "(" .. reason .. ")" ) or ""
-			setTimer ( kickPlayer, 100, 1, player, source, reason )
+			local isAnonAdmin = getElementData(source, "AnonAdmin")
+			if isAnonAdmin then
+				setTimer ( kickPlayer, 100, 1, player, root, reason )
+			else
+				setTimer ( kickPlayer, 100, 1, player, source, reason )
+			end
 		elseif ( action == "ban" ) then
 			local reason = data or ""
 			local seconds = tonumber(additional) and tonumber(additional) > 0 and tonumber(additional)
 			local bUseSerial = additional2
+			local isAnonAdmin = getElementData(source, "AnonAdmin")
 			mdata = reason~="" and ( "(" .. reason .. ")" ) or ""
 			more = seconds and ( "(" .. secondsToTimeDesc(seconds) .. ")" ) or ""
-			if bUseSerial and getPlayerName ( player ) then
+			if bUseSerial and getPlayerName ( player ) and not isAnonAdmin then
 				-- Add banned player name to the reason
 				reason = reason .. " (nick: " .. getPlayerName ( player ) .. ")"
 			end
 			-- Add account name of banner to the reason
 			local adminAccountName = getAccountName ( getPlayerAccount ( source ) )
-			if adminAccountName and adminAccountName ~= getPlayerName( source ) then
+			if adminAccountName and adminAccountName ~= getPlayerName( source ) and not isAnonAdmin then
 				reason = reason .. " (by " .. adminAccountName .. ")"
 			end
 			if bUseSerial then
 				outputChatBox ( "You banned serial " .. getPlayerSerial( player ), source, 255, 100, 70 )
-				setTimer ( addBan, 100, 1, nil, nil, getPlayerSerial(player), source, reason, seconds or 0 )
+				if isAnonAdmin then
+
+					setTimer ( function()
+						local tBan = addBan( nil, nil, getPlayerSerial(player), "Anonymous admin", reason, seconds or 0 )
+						setBanAdmin(tBan,adminAccountName)
+					end, 100, 1)
+					
+				else
+					setTimer ( function()
+						local tBan = addBan( nil, nil, getPlayerSerial(player), source, reason, seconds or 0 )
+						setBanAdmin(tBan,adminAccountName)
+					end, 100, 1)
+				end
 			else
 				outputChatBox ( "You banned IP " .. getPlayerIP( player ), source, 255, 100, 70 )
-				setTimer ( banPlayer, 100, 1, player, true, false, false, source, reason, seconds or 0 )
+				if isAnonAdmin then
+					setTimer ( function()
+						local tBan = banPlayer( player, true, false, false, nil, reason, seconds or 0 )
+						setBanAdmin(tBan,adminAccountName)
+					end, 100, 1)
+				else
+					setTimer ( function()
+						local tBan = banPlayer( player, true, false, false, source, reason, seconds or 0 )
+						setBanAdmin(tBan,adminAccountName)
+					end, 100, 1)
+				end
 			end
 			setTimer( triggerEvent, 1000, 1, "aSync", _root, "bansdirty" )
 		elseif ( action == "mute" )  then
@@ -865,7 +893,13 @@ addEventHandler ( "aPlayer", _root, function ( player, action, data, additional,
 			end
 		elseif ( action == "shout" ) then
 			local textDisplay = textCreateDisplay ()
-			local textItem = textCreateTextItem ( "(ADMIN)"..getPlayerName ( source )..":\n\n"..data, 0.5, 0.5, 2, 255, 100, 50, 255, 4, "center", "center" )
+			local textItem
+			local anon = getElementData( admin, "AnonAdmin" ) 
+			if (anon) then
+				textItem = textCreateTextItem ( "ADMIN:\n\n"..data, 0.5, 0.5, 2, 255, 100, 50, 255, 4, "center", "center" )
+			else
+				textItem = textCreateTextItem ( "(ADMIN)"..getPlayerName ( source )..":\n\n"..data, 0.5, 0.5, 2, 255, 100, 50, 255, 4, "center", "center" )
+			end
 			textDisplayAddText ( textDisplay, textItem )
 			textDisplayAddObserver ( textDisplay, player )
 			setTimer ( textDestroyTextItem, 5000, 1, textItem )
@@ -1353,21 +1387,29 @@ addEventHandler ( "aModdetails", resourceRoot, function ( action, player )
 end )
 
 addEvent ( "aBans", true )
-addEventHandler ( "aBans", _root, function ( action, data )
+addEventHandler ( "aBans", _root, function ( action, data, arg1, arg2, arg3 )
 	if checkClient( "command."..action, source, 'aBans', action ) then return end
 	if ( hasObjectPermissionTo ( source, "command."..action ) ) then
 		local mdata = ""
 		local more = ""
 		if ( action == "banip" ) then
 			mdata = data
-			if ( not addBan ( data,nil,nil,source ) ) then
+			local newban = addBan ( data,nil,nil,source,arg2, arg3 )
+			if ( not newban ) then
 				action = nil
+			else
+				setBanNick (newban, arg1)
+				setBanAdmin(newban, getAccountName(getPlayerAccount(source)))
 			end
 		elseif ( action == "banserial" ) then
 			mdata = data
 			if ( isValidSerial ( data ) ) then
-				if ( not addBan ( nil,nil, string.upper ( data ),source ) ) then
+				local newban = addBan ( nil,nil, string.upper ( data ),source,arg2, arg3 )
+				if ( not newban ) then
 					action = nil
+				else
+					setBanAdmin(newban, getAccountName(getPlayerAccount(source)))
+					setBanNick (newban, arg1)
 				end
 			else
 				outputChatBox ( "Error - Invalid serial", source, 255, 0, 0 )
@@ -1433,6 +1475,7 @@ addEventHandler ( "aAdminChat", _root, function ( chat )
 			triggerClientEvent ( player, "aClientAdminChat", source, chat )
 		end
 	end
+	outputServerLog ("(ADMIN CHAT) "..tostring(getPlayerName(source))..": "..chat)
 end )
 
 addEventHandler('onElementDataChange', root,

@@ -1,4 +1,4 @@
-﻿--[[**********************************
+--[[**********************************
 *
 *	Multi Theft Auto - Admin Panel
 *
@@ -14,7 +14,7 @@ local varOne, varTwo = nil, nil
 function aInputBox ( title, message, default, action, vOne, vTwo )
 	if ( aInputForm == nil ) then
 		local x, y = guiGetScreenSize()
-		aInputForm		= guiCreateWindow ( x / 2 - 150, y / 2 - 64, 300, 110, "", false )
+		aInputForm		= guiCreateWindow ( x / 2 - 150, y / 2 - 64, 300, 170, "", false )
 				  	   guiWindowSetSizable ( aInputForm, false )
 		aInputLabel		= guiCreateLabel ( 20, 24, 270, 15, "", false, aInputForm )
 					   guiLabelSetHorizontalAlign ( aInputLabel, "center" )
@@ -29,6 +29,60 @@ function aInputBox ( title, message, default, action, vOne, vTwo )
 		--Register With Admin Form
 		aRegister ( "InputBox", aInputForm, aInputBox, aInputBoxClose )
 	end
+	if not action or action ~= "banSerial" and action ~= "banIP" then
+		guiSetSize(aInputForm, 300, 170, false)
+		guiSetPosition(aInputOk, 90, 80, false)
+		guiSetPosition(aInputCancel, 150, 80, false)
+
+		if isElement(banSerialLbl) then destroyElement(banSerialLbl) end
+		if isElement(banNickEdit) then destroyElement(banNickEdit) end
+		if isElement(banReasonEdit) then destroyElement(banReasonEdit) end
+		if isElement(banSerialCombo) then destroyElement(banSerialCombo) end
+		if isElement(banDurationLbl) then destroyElement(banDurationLbl) end
+		if isElement(durationEdit) then destroyElement(durationEdit) end
+	else
+		guiSetSize(aInputForm, 300, 210, false)
+		guiSetPosition(aInputOk, 90, 180, false)
+		guiSetPosition(aInputCancel, 150, 180, false)
+		
+
+		-- time duration:
+
+		if not isElement(banSerialCombo) then
+			banSerialCombo = guiCreateComboBox ( 180, 80, 120, 100, "Perm", false, aInputForm )
+				guiComboBoxAddItem(banSerialCombo, "Mins")
+				guiComboBoxAddItem(banSerialCombo, "Hours")
+				guiComboBoxAddItem(banSerialCombo, "Days")
+				guiComboBoxAddItem(banSerialCombo, "Perm")
+		end
+
+		if not isElement(durationEdit) then
+			durationEdit = guiCreateEdit ( 110, 80, 60, 24, "", false, aInputForm )
+		end
+		guiSetText(durationEdit, "")
+
+		if not isElement(banDurationLbl) then
+			banDurationLbl = guiCreateLabel ( 40, 83, 50, 15, "Duration:", false, aInputForm )
+			guiLabelSetHorizontalAlign ( banDurationLbl, "center" )
+		end
+
+		if not isElement(banSerialLbl) then
+			banSerialLbl = guiCreateLabel ( 20, 110, 270, 15, "Enter player nick & reason", false, aInputForm )
+			guiLabelSetHorizontalAlign ( banSerialLbl, "center" )
+		end
+
+		if not isElement(banNickEdit) then
+			banNickEdit = guiCreateEdit ( 35, 130, 60, 24, "", false, aInputForm )
+		end
+		guiSetText(banNickEdit, "Nick")
+
+		if not isElement(banReasonEdit) then
+			banReasonEdit = guiCreateEdit ( 100, 130, 165, 24, "", false, aInputForm )
+		end
+		guiSetText(banReasonEdit, "Reason")
+	end
+	
+
 	guiSetText ( aInputForm, title )
 	guiSetText ( aInputLabel, message )
 	guiSetText ( aInputValue, default )
@@ -98,10 +152,29 @@ function aInputBoxClick ( button )
 				triggerServerEvent("aBans", localPlayer, "unbanip", guiGetText(aInputValue))
 			elseif (aInputAction == "unbanSerial") then
 				triggerServerEvent("aBans", localPlayer, "unbanserial", guiGetText(aInputValue))
-			elseif (aInputAction == "banIP") then
-				triggerServerEvent("aBans", localPlayer, "banip", guiGetText(aInputValue))
-			elseif (aInputAction == "banSerial") then
-				triggerServerEvent("aBans", localPlayer, "banserial", guiGetText(aInputValue))
+			elseif (aInputAction == "banIP") or (aInputAction == "banSerial") then
+				local theDuration = 0
+				local durType = guiGetText(banSerialCombo)
+				if durType and durType ~= "Perm" then
+					-- First validate entry, must be a number
+					local durEntry = tonumber(guiGetText(durationEdit))
+					if not durEntry or type(durEntry) ~= "number" then
+						return outputChatBox("* Error: Enter a valid numeric duration value", 255, 0, 0)
+					else
+						if durType == "Mins" then
+							theDuration = math.floor(math.abs(durEntry)) * 60
+						elseif durType == "Hours" then
+							theDuration = math.floor(math.abs(durEntry)) * 60 * 60
+						elseif durType == "Days" then
+							theDuration = math.floor(math.abs(durEntry)) * 24 * 60 * 60
+						end
+					end
+				end
+				if aInputAction == "banIP" then
+					triggerServerEvent("aBans", localPlayer, "banip", guiGetText(aInputValue), guiGetText(banNickEdit), guiGetText(banReasonEdit), theDuration)
+				elseif aInputAction == "banSerial" then
+					triggerServerEvent("aBans", localPlayer, "banserial", guiGetText(aInputValue), guiGetText(banNickEdit), guiGetText(banReasonEdit), theDuration)
+				end
 			elseif (aInputAction == "settingChange") then
 				triggerServerEvent("aAdmin", localPlayer, "settings", "change", varOne, varTwo, guiGetText(aInputValue))
 			elseif (aInputAction == "aclCreateGroup") then
@@ -455,4 +528,3 @@ function aMuteInputBoxFinish ()
 		guiRadioButtonSetSelected( aMuteInputRadio2s[i], false ) 
 	end
 end
-

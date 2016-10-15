@@ -504,13 +504,10 @@ end
 function setMyPos(x, y, z)
 	if not isElement(client) or getElementType(client) ~= "player" then
 		return
-<<<<<<< HEAD
-=======
 	end 
 	
 	if ( getOption('weapons.kniferestrictions') ) then
 		setPlayerKnifeRestricted ( client )
->>>>>>> upstream/master
 	end
 
 	local veh = getPedOccupiedVehicle (client)

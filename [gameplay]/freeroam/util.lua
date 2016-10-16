@@ -402,12 +402,3 @@ function getPlayerName(player)
 		return _getPlayerName(player)
 	end
 end
-
-
-
-
-
-
-
-
-

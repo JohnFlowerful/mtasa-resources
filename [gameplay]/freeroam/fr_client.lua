@@ -40,7 +40,7 @@ wndSkin = {
 			'lst',
 			id='skinlist',
 			width=230,
-			height=290,
+			height=500,
 			columns={
 				{text='Skin', attr='name'}
 			},
@@ -48,7 +48,7 @@ wndSkin = {
 			onitemclick=showSkinID,
 			onitemdoubleclick=applySkin
 		},
-		{'txt', id='skinid', text='', width=50},
+		{'txt', id='skinid', text='', width=65},
 		{'btn', id='set', onclick=applySkin},
 		{'btn', id='close', closeswindow=true}
 	},
@@ -90,15 +90,15 @@ bindKey("lshift", "down", "stopanim")
 wndAnim = {
 	'wnd',
 	text = 'Set animation',
-	width = 250,
+	width = 300,
 	x = -20,
 	y = 0.3,
 	controls = {
 		{
 			'lst',
 			id='animlist',
-			width=230,
-			height=290,
+			width=290,
+			height=500,
 			columns={
 				{text='Animation', attr='name'}
 			},
@@ -137,12 +137,14 @@ wndWeapon = {
 	'wnd',
 	text = 'Give weapon',
 	width = 250,
+	x = -20,
+	y = 0.3,
 	controls = {
 		{
 			'lst',
 			id='weaplist',
-			width=230,
-			height=280,
+			width=290,
+			height=500,
 			columns={
 				{text='Weapon', attr='name'}
 			},
@@ -246,13 +248,13 @@ wndClothes = {
 	text = 'Clothes',
 	x = -20,
 	y = 0.3,
-	width = 350,
+	width = 300,
 	controls = {
 		{
 			'lst',
 			id='clothes',
-			width=330,
-			height=390,
+			width=290,
+			height=500,
 			columns={
 				{text='Clothes', attr='name', width=0.6},
 				{text='Wearing', attr='wearing', enablemodify=true, width=0.3}
@@ -384,23 +386,22 @@ end
 wndOutfits = {
 	'wnd',
 	text = 'Outfits',
-	width = 170,
+	width = 300,
 	x = -400,
 	y = 0.3,
 	controls = {
 		{
 			'lst',
 			id='outfits',
-			width=150,
-			height=250,
+			width=300,
 			columns={
-				{text='Name', attr='name', width=0.85},
+				{text='Name', attr='name', width=0.9},
 			}
 		},
-		{'txt', id='outfitname', text='', width=100},
-		{'btn', id='save', onclick=saveOutfit, width=45},
-		{'btn', id='delete selected', onclick=deleteOutfit, width=100},
-		{'btn', id='close', closeswindow=true, width=45}
+		{'txt', id='outfitname', text='', width=150},
+		{'btn', id='save', onclick=saveOutfit, width=125},
+		{'btn', id='delete selected', onclick=deleteOutfit, width=150},
+		{'btn', id='close', closeswindow=true, width=125}
 	},
 	oncreate = initOutfits
 }
@@ -498,12 +499,14 @@ wndWarp = {
 	'wnd',
 	text = 'Warp to player',
 	width = 300,
+	x = -20,
+	y = 0.3,
 	controls = {
 		{
 			'lst',
 			id='playerlist',
-			width=280,
-			height=330,
+			width=290,
+			height=500,
 			columns={
 				{text='Player', attr='name'}
 			},
@@ -1038,13 +1041,15 @@ end
 wndSetInterior = {
 	'wnd',
 	text = 'Set interior',
-	width = 250,
+	width = 300,
+	x = -20,
+	y = 0.3,
 	controls = {
 		{
 			'lst',
 			id='interiors',
-			width=230,
-			height=300,
+			width=290,
+			height=500,
 			columns={
 				{text='Interior', attr='name'}
 			},
@@ -1072,12 +1077,14 @@ wndCreateVehicle = {
 	'wnd',
 	text = 'Create vehicle',
 	width = 300,
+	x = -20,
+	y = 0.3,
 	controls = {
 		{
 			'lst',
 			id='vehicles',
-			width=280,
-			height=340,
+			width=290,
+			height=500,
 			columns={
 				{text='Vehicle', attr='name'}
 			},
@@ -1233,8 +1240,8 @@ wndUpgrades = {
 		{
 			'lst',
 			id='upgradelist',
-			width=280,
-			height=340,
+			width=290,
+			height=500,
 			columns={
 				{text='Upgrade', attr='id', width=0.6},
 				{text='Installed', attr='installed', width=0.3, enablemodify=true}

@@ -116,6 +116,9 @@
 	<file src="icons/train.png"/>
 	<file src="icons/fireextinguisher.png"/>
 
+	<file src="sounds/smb_mariodie.wav"/>
+	<file src="sounds/smb_powerup.wav"/>
+
 	<export function="outputMessage" type="server"/>
 	<export function="outputMessage" type="client"/>
 	<export function="outputKillMessage" type="server"/>

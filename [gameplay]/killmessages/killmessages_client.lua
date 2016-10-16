@@ -23,6 +23,7 @@ function outputKillMessage ( source, wr,wg,wb,killer,kr,kg,kb,weapon,width,resou
 		if isElement ( source ) then
 			if getElementType ( source ) == "player" then 
 				wastedName = getPlayerName ( source )
+				playDeathSound ( source, 'sounds/smb_mariodie.wav')
 			else 
 			outputDebugString ( "outputKillMessage - Invalid 'wasted' player specified",0,0,0,100)
 			return false end
@@ -36,6 +37,7 @@ function outputKillMessage ( source, wr,wg,wb,killer,kr,kg,kb,weapon,width,resou
 		if isElement ( killer ) then
 			if getElementType ( killer ) == "player" then
 				killerName = getPlayerName ( killer )
+				playDeathSound ( killer, 'sounds/smb_powerup.wav')
 			else 
 				outputDebugString ( "outputKillMessage - Invalid 'killer' player specified",0,0,0,100)
 			return false end
@@ -52,4 +54,14 @@ function outputKillMessage ( source, wr,wg,wb,killer,kr,kg,kb,weapon,width,resou
 	return outputMessage ( {killerName, {"padding",width=3}, {"icon",id=weapon},
 		{"padding",width=3},{"color",r=wr,g=wg,b=wb}, wastedName},
 		kr,kg,kb )
+end
+
+function playDeathSound(player, filename)
+	local dimension = getElementDimension ( player )
+	local x, y, z = getElementPosition ( player )
+	local deathsound = playSound3D ( filename, x, y, z, false )
+	setElementDimension ( deathsound, dimension )
+	attachElements ( deathsound, player )
+	setSoundMinDistance ( deathsound, 20 )
+	setSoundMaxDistance ( deathsound, 40 )
 end

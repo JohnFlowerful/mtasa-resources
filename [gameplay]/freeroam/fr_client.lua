@@ -1341,6 +1341,25 @@ function openColorPicker()
 			errMsg('Only the driver of the vehicle can set its color.')
 			return
 		end
+		
+		local r1, g1, b1, r2, g2, b2, r3, g3, b3, r4, g4, b4 = getVehicleColor(editingVehicle, true)
+		local r, g, b = 255, 255, 255
+		if (guiCheckBoxGetSelected(checkColor1)) then
+			r, g, b = r1, g1, b1
+		end
+		if (guiCheckBoxGetSelected(checkColor2)) then
+			r, g, b = r2, g2, b2
+		end
+		if (guiCheckBoxGetSelected(checkColor3)) then
+			r, g, b = r3, g3, b3
+		end
+		if (guiCheckBoxGetSelected(checkColor4)) then
+			r, g, b = r4, g4, b4
+		end
+		if (guiCheckBoxGetSelected(checkColor5)) then
+			r, g, b = getVehicleHeadLightColor(editingVehicle)
+		end
+		colorPicker.setValue({r, g, b})
 		colorPicker.openSelect(colors)
 	end
 end

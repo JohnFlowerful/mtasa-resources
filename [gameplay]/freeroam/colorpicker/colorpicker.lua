@@ -167,7 +167,7 @@ colorPicker = {
 		guiSetFont( colorPicker.GUI.noteLabel, "default-small" )
 		
 		checkColor1 = guiCreateCheckBox(info.selectWindow.ra1X, info.selectWindow.ra1Y,
-												70, 15, "Color 1", false, false, colorPicker.GUI.selectWindow)
+												70, 15, "Color 1", true, false, colorPicker.GUI.selectWindow)
 		
 		checkColor2 = guiCreateCheckBox(info.selectWindow.ra2X, info.selectWindow.ra2Y,
 												70, 15, "Color 2", false, false, colorPicker.GUI.selectWindow)

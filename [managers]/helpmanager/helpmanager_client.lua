@@ -19,8 +19,8 @@ addEvent("onHelpShown")
 addEvent("onHelpHidden")
 
 addEventHandler("onClientResourceStart", thisResourceRoot, 
-	function ()
-		wndHelp  = guiCreateWindow(.2, .2, .6, .6, "Help", true)
+	function () 
+		wndHelp  = guiCreateWindow(.1, .2, .8, .6, "Help", true)
 		wndBlock = guiCreateWindow(0, 0, 1, 1, "", true)
 		tPanel   = guiCreateTabPanel(0, .05, 1, .85, true, wndHelp)
 		btnClose = guiCreateButton(.4, .92, .2, .08, "Close", true, wndHelp)

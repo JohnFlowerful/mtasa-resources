@@ -29,6 +29,7 @@ local endTime
 local screenX,screenY = guiGetScreenSize ()
 local contentMessages = {}
 local fadingLines = {}
+local enabled = true
 ---
 local iconOrder = {}
 
@@ -106,43 +107,45 @@ end
 
 addEvent ( "doOutputMessage", true )
 function outputMessage ( message, r, g, b, font )
-	if type(message) ~= "string" and type(message) ~= "table" then
-		outputDebugString ( "outputMessage - Bad 'message' argument", 0, 112, 112, 112 ) 
-		return false 
-	end
-	if type(font) ~= "string" then 
-		font = "default"
-	end
-	r = tonumber(r) or 255
-	g = tonumber(g) or 255
-	b = tonumber(b) or 255
-	---shift everything up
-	shiftUpGUI()
-	--Delete the first line
-	destroyLine (1)
-	table.remove ( contentMessages, 1 )
-	if type(message) == "string" then
-		message = {message}
-	end
-	local y = config.startY*screenY + (config.iconHeight*(config.lines-1)) + (config.iconHeight - config.textHeight)/2
-	local startX = config.startX
-	if startX < 1 and startX > -1 then --auto calculate whether its relative or absolute
-		startX = screenX/startX --make it relative
-	end
-	if startX < 0 then
-		startX = screenX + startX
-	end
-	
-	for i,part in ipairs(message) do
-		if type(part) == "table" and part[1] == "image" then
-			if not part.resource and not part.resourceName then
-				part.resource = sourceResource
+	if enabled == true then
+		if type(message) ~= "string" and type(message) ~= "table" then
+			outputDebugString ( "outputMessage - Bad 'message' argument", 0, 112, 112, 112 ) 
+			return false 
+		end
+		if type(font) ~= "string" then 
+			font = "default"
+		end
+		r = tonumber(r) or 255
+		g = tonumber(g) or 255
+		b = tonumber(b) or 255
+		---shift everything up
+		shiftUpGUI()
+		--Delete the first line
+		destroyLine (1)
+		table.remove ( contentMessages, 1 )
+		if type(message) == "string" then
+			message = {message}
+		end
+		local y = config.startY*screenY + (config.iconHeight*(config.lines-1)) + (config.iconHeight - config.textHeight)/2
+		local startX = config.startX
+		if startX < 1 and startX > -1 then --auto calculate whether its relative or absolute
+			startX = screenX/startX --make it relative
+		end
+		if startX < 0 then
+			startX = screenX + startX
+		end
+		
+		for i,part in ipairs(message) do
+			if type(part) == "table" and part[1] == "image" then
+				if not part.resource and not part.resourceName then
+					part.resource = sourceResource
+				end
 			end
 		end
+		
+		drawLine ( message, startX, y, config.align, config.lines, r, g, b, font, 1 )
+		fadeLine ( config.lines )	
 	end
-	
-	drawLine ( message, startX, y, config.align, config.lines, r, g, b, font, 1 )
-	fadeLine ( config.lines )	
 end
 addEventHandler ( "doOutputMessage", getRootElement(), outputMessage )
 
@@ -223,6 +226,18 @@ function()
 		end
 	end
 end )
+
+addCommandHandler('killmessages',
+	function ()
+		if enabled == true then
+			enabled = false
+			outputChatBox('killmessages disabled')
+		else
+			enabled = true
+			outputChatBox('killmessages enabled')
+		end
+	end
+)
 
 function setLineAlpha ( line, alpha )
 	for i,part in ipairs(contentMessages[line]) do

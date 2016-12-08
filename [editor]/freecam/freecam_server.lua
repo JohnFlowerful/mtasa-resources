@@ -6,6 +6,10 @@ function setPlayerFreecamDisabled(player, dontChangeFixedMode)
 	return triggerClientEvent(player,"doSetFreecamDisabled", getRootElement(), dontChangeFixedMode)
 end
 
+function setPlayerFreecamStatic(player, state)
+	return triggerClientEvent(player,"doSetFreecamStatic", getRootElement(), state)
+end
+
 function setPlayerFreecamOption(player, theOption, value)
 	return triggerClientEvent(player,"doSetFreecamOption", getRootElement(), theOption, value)
 end

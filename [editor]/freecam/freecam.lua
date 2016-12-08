@@ -1,5 +1,6 @@
 ﻿-- state variables
 local speed = 0
+local static = false
 local strafespeed = 0
 local rotX, rotY = 0,0
 local velocityX, velocityY, velocityZ
@@ -82,86 +83,88 @@ local function freecamFrame ()
 		mspeed = options.slowMaxSpeed
     end
 	
-	if options.smoothMovement then
-		local acceleration = options.acceleration
-		local decceleration = options.decceleration
-	
-	    -- Check to see if the forwards/backwards keys are pressed
-	    local speedKeyPressed = false
-	    if ( getKeyState ( options.key_forward ) or getKeyState ( options.key_forward_veh ) ) and not getKeyState("arrow_u") then
-			speed = speed + acceleration 
-	        speedKeyPressed = true
-	    end
-		if ( getKeyState ( options.key_backward ) or getControlState ( options.key_backward_veh ) ) and not getKeyState("arrow_d") then
-			speed = speed - acceleration 
-	        speedKeyPressed = true
-	    end
-
-	    -- Check to see if the strafe keys are pressed
-	    local strafeSpeedKeyPressed = false
-		if ( getKeyState ( options.key_right ) or getKeyState ( options.key_right_veh ) ) and not getKeyState("arrow_r") then
-	        if strafespeed > 0 then -- for instance response
-	            strafespeed = 0
-	        end
-	        strafespeed = strafespeed - acceleration / 2
-	        strafeSpeedKeyPressed = true
-	    end
-		if ( getKeyState ( options.key_left ) or getKeyState ( options.key_left_veh ) ) and not getKeyState("arrow_l") then
-	        if strafespeed < 0 then -- for instance response
-	            strafespeed = 0
-	        end
-	        strafespeed = strafespeed + acceleration / 2
-	        strafeSpeedKeyPressed = true
-	    end
-
-	    -- If no forwards/backwards keys were pressed, then gradually slow down the movement towards 0
-	    if speedKeyPressed ~= true then
-			if speed > 0 then
-				speed = speed - decceleration
-			elseif speed < 0 then
-				speed = speed + decceleration
+	if not static then
+		if options.smoothMovement then
+			local acceleration = options.acceleration
+			local decceleration = options.decceleration
+		
+			-- Check to see if the forwards/backwards keys are pressed
+			local speedKeyPressed = false
+			if ( getKeyState ( options.key_forward ) or getKeyState ( options.key_forward_veh ) ) and not getKeyState("arrow_u") then
+				speed = speed + acceleration 
+				speedKeyPressed = true
 			end
-	    end
-
-	    -- If no strafe keys were pressed, then gradually slow down the movement towards 0
-	    if strafeSpeedKeyPressed ~= true then
-			if strafespeed > 0 then
-				strafespeed = strafespeed - decceleration
-			elseif strafespeed < 0 then
-				strafespeed = strafespeed + decceleration
+			if ( getKeyState ( options.key_backward ) or getControlState ( options.key_backward_veh ) ) and not getKeyState("arrow_d") then
+				speed = speed - acceleration 
+				speedKeyPressed = true
 			end
-	    end
 
-	    -- Check the ranges of values - set the speed to 0 if its very close to 0 (stops jittering), and limit to the maximum speed
-	    if speed > -decceleration and speed < decceleration then
-	        speed = 0
-	    elseif speed > mspeed then
-	        speed = mspeed
-	    elseif speed < -mspeed then
-	        speed = -mspeed
-	    end
-	 
-	    if strafespeed > -(acceleration / 2) and strafespeed < (acceleration / 2) then
-	        strafespeed = 0
-	    elseif strafespeed > mspeed then
-	        strafespeed = mspeed
-	    elseif strafespeed < -mspeed then
-	        strafespeed = -mspeed
-	    end
-	else
-		speed = 0
-		strafespeed = 0
-		if getKeyState ( options.key_forward ) or getKeyState ( options.key_forward_veh ) then
-			speed = mspeed
-		end
-		if getKeyState ( options.key_backward ) or getKeyState ( options.key_backward_veh ) then
-			speed = -mspeed
-		end
-		if getKeyState ( options.key_left ) or getKeyState ( options.key_left_veh ) then
-			strafespeed = mspeed
-		end
-		if getKeyState ( options.key_right ) or getKeyState ( options.key_right_veh ) then
-			strafespeed = -mspeed
+			-- Check to see if the strafe keys are pressed
+			local strafeSpeedKeyPressed = false
+			if ( getKeyState ( options.key_right ) or getKeyState ( options.key_right_veh ) ) and not getKeyState("arrow_r") then
+				if strafespeed > 0 then -- for instance response
+					strafespeed = 0
+				end
+				strafespeed = strafespeed - acceleration / 2
+				strafeSpeedKeyPressed = true
+			end
+			if ( getKeyState ( options.key_left ) or getKeyState ( options.key_left_veh ) ) and not getKeyState("arrow_l") then
+				if strafespeed < 0 then -- for instance response
+					strafespeed = 0
+				end
+				strafespeed = strafespeed + acceleration / 2
+				strafeSpeedKeyPressed = true
+			end
+
+			-- If no forwards/backwards keys were pressed, then gradually slow down the movement towards 0
+			if speedKeyPressed ~= true then
+				if speed > 0 then
+					speed = speed - decceleration
+				elseif speed < 0 then
+					speed = speed + decceleration
+				end
+			end
+
+			-- If no strafe keys were pressed, then gradually slow down the movement towards 0
+			if strafeSpeedKeyPressed ~= true then
+				if strafespeed > 0 then
+					strafespeed = strafespeed - decceleration
+				elseif strafespeed < 0 then
+					strafespeed = strafespeed + decceleration
+				end
+			end
+
+			-- Check the ranges of values - set the speed to 0 if its very close to 0 (stops jittering), and limit to the maximum speed
+			if speed > -decceleration and speed < decceleration then
+				speed = 0
+			elseif speed > mspeed then
+				speed = mspeed
+			elseif speed < -mspeed then
+				speed = -mspeed
+			end
+		 
+			if strafespeed > -(acceleration / 2) and strafespeed < (acceleration / 2) then
+				strafespeed = 0
+			elseif strafespeed > mspeed then
+				strafespeed = mspeed
+			elseif strafespeed < -mspeed then
+				strafespeed = -mspeed
+			end
+		else
+			speed = 0
+			strafespeed = 0
+			if getKeyState ( options.key_forward ) or getKeyState ( options.key_forward_veh ) then
+				speed = mspeed
+			end
+			if getKeyState ( options.key_backward ) or getKeyState ( options.key_backward_veh ) then
+				speed = -mspeed
+			end
+			if getKeyState ( options.key_left ) or getKeyState ( options.key_left_veh ) then
+				strafespeed = mspeed
+			end
+			if getKeyState ( options.key_right ) or getKeyState ( options.key_right_veh ) then
+				strafespeed = -mspeed
+			end
 		end
 	end
 
@@ -296,6 +299,13 @@ function setFreecamDisabled()
 	return true
 end
 
+function setFreecamStatic(state)
+	static = state
+	velocityX,velocityY,velocityZ = 0,0,0
+	speed = 0
+	strafespeed = 0
+end
+
 function isFreecamEnabled()
 	return getElementData(localPlayer,"freecam:state")
 end
@@ -318,6 +328,9 @@ addEventHandler("doSetFreecamEnabled", root, setFreecamEnabled)
 
 addEvent("doSetFreecamDisabled", true)
 addEventHandler("doSetFreecamDisabled", root, setFreecamDisabled)
+
+addEvent("doSetFreecamStatic", true)
+addEventHandler("doSetFreecamStatic", root, setFreecamStatic)
 
 addEvent("doSetFreecamOption")
 addEventHandler("doSetFreecamOption", root, setFreecamOption)

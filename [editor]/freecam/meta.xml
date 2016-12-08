@@ -5,11 +5,13 @@
 	<!-- server functions -->
 	<export function="setPlayerFreecamEnabled" />
 	<export function="setPlayerFreecamDisabled" />
+	<export function="setPlayerFreecamStatic" />
 	<export function="isPlayerFreecamEnabled" />
 	<export function="setPlayerFreecamOption" />
 	<!-- client functions -->
 	<export function="setFreecamEnabled" type="client" />
 	<export function="setFreecamDisabled" type="client" />
+	<export function="setFreecamStatic" type="client" />
 	<export function="isFreecamEnabled" type="client" />
 	<export function="setFreecamOption" type="client" />
 	<export function="getFreecamOption" type="client" />

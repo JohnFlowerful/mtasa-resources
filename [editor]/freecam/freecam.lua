@@ -7,13 +7,13 @@ local velocityX, velocityY, velocityZ
 -- configurable parameters
 local options = {
 	invertMouseLook = false,
-	normalMaxSpeed = 2,
-	slowMaxSpeed = 0.2,
+	normalMaxSpeed = 0.5,
+	slowMaxSpeed = 0.1,
 	fastMaxSpeed = 12,
 	smoothMovement = true,
-	acceleration = 0.3,
+	acceleration = 0.2,
 	decceleration = 0.15,
-	mouseSensitivity = 0.3,
+	mouseSensitivity = 0.15,
 	maxYAngle = 188,
 	key_fastMove = "lshift",
 	key_slowMove = "lalt",

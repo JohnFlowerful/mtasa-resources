@@ -1,4 +1,4 @@
-﻿g_Root = getRootElement()
+g_Root = getRootElement()
 g_ResRoot = getResourceRootElement(getThisResource())
 g_PlayerData = {}
 g_VehicleData = {}
@@ -277,9 +277,8 @@ function warpMe(targetPlayer)
 	if not vehicle then
 		-- target player is not in a vehicle - just warp next to him
 		local x, y, z = getElementPosition(targetPlayer)
-		clientCall(source, 'setPlayerPosition', x + 2, y, z)
-		setElementInterior(source, interior)
-		setCameraInterior(source, interior)
+		fadeCamera(source,false,1)
+		setTimer(clientCall,1000,1,source,'setPlayerInterior', x + 2, y, z,interior)
 	else
 		-- target player is in a vehicle - warp into it if there's space left
 		if getPedOccupiedVehicle(source) then
@@ -482,6 +481,13 @@ addEventHandler('onVehicleEnter', g_Root,
 			toggleControl(player, 'vehicle_fire', false)
 			toggleControl(player, 'vehicle_secondary_fire', false)
 		end
+		-- Fast Hunter/Hydra on custom gravity fix
+		if getElementModel(source) == 425 or getElementModel(source) == 520 then
+			if getPedGravity(player) ~= 0.008 then
+				g_PlayerData[player].previousGravity = getPedGravity(player)
+				setPedGravity(player, 0.008)
+			end
+		end
 	end
 )
 
@@ -556,6 +562,11 @@ addEventHandler('onVehicleExit', g_Root,
 			toggleControl(player, 'vehicle_fire', true)
 			toggleControl(player, 'vehicle_secondary_fire', true)
 		end
+			
+		if g_PlayerData[player].previousGravity then
+			setPedGravity(player, g_PlayerData[player].previousGravity)
+			g_PlayerData[player].previousGravity = nil
+		end
 	end
 )
 
@@ -575,6 +586,12 @@ addEventHandler('onVehicleExplode', g_Root,
 		end
 		if not g_VehicleData[source].timers.destroy then
 			g_VehicleData[source].timers.destroy = setTimer(unloadVehicle, 5000, 1, source)
+		end
+		if getVehicleController(source) then
+			if g_PlayerData[getVehicleController(source)].previousGravity then
+				setPedGravity(getVehicleController(source), g_PlayerData[getVehicleController(source)].previousGravity)
+				g_PlayerData[getVehicleController(source)].previousGravity = nil
+			end
 		end
 	end
 )
@@ -626,6 +643,15 @@ addEventHandler('onServerCall', resourceRoot,
 	function(fnName, ...)
 		source = client		-- Some called functions require 'source' to be set to the triggering client
 		local fnInfo = g_RPCFunctions[fnName]
+
+		-- Custom check made to intercept the jetpack on custom gravity
+		if fnInfo and type(fnInfo) ~= "boolean" and tostring(fnInfo.option) == "jetpack" then
+			if tonumber(("%.3f"):format(getPedGravity(source))) ~= 0.008 then
+				errMsg("* You may use jetpack only if the gravity is set to 0.008", source)
+				return
+			end
+		end
+
 		if fnInfo and ((type(fnInfo) == 'boolean' and fnInfo) or (type(fnInfo) == 'table' and getOption(fnInfo.option))) then
 			local fn = _G
 			for i,pathpart in ipairs(fnName:split('.')) do

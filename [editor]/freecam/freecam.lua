@@ -54,7 +54,7 @@ function getKeyState(key)
 		return mta_getKeyState(controlToKey[key])
 	else
 		-- We can use getControlState
-		return getControlState(key)
+		return getPedControlState(localPlayer, key)
 	end
 end
 
@@ -94,7 +94,7 @@ local function freecamFrame ()
 				speed = speed + acceleration 
 				speedKeyPressed = true
 			end
-			if ( getKeyState ( options.key_backward ) or getControlState ( options.key_backward_veh ) ) and not getKeyState("arrow_d") then
+			if ( getKeyState ( options.key_backward ) or getPedControlState ( localPlayer, options.key_backward_veh ) ) and not getKeyState("arrow_d") then
 				speed = speed - acceleration 
 				speedKeyPressed = true
 			end

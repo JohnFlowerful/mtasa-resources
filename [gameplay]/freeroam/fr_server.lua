@@ -130,7 +130,7 @@ function joinHandler(player)
 	if not player then
 		player = source
 	end
-	g_PlayerData[player] = { vehicles = {} }
+	g_PlayerData[player] = { vehicles = {}, settings = {} }
 	if getOption('handleblips') then
 		local r, g, b = math.random(50, 255), math.random(50, 255), math.random(50, 255)
 		setPlayerNametagColor(player, r, g, b)

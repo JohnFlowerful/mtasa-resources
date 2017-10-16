@@ -497,7 +497,7 @@ function saveOutfit()
 		local row = guiGridListAddRow(outfitList)
 		outfits[row+1] = {}
 		for i=0,17 do
-			local texture,model = getPedClothes (g_Me, i)
+			local texture,model = getPedClothes (localPlayer, i)
 			if texture and model then
 				table.insert(outfits[row+1], i, texture ..', '.. model)
 			else
@@ -527,9 +527,9 @@ function loadClothes()
 		for k,v in pairs (outfits[row+1]) do
 			if v ~= 'none' then
 				local clothes = split(v, ', ')
-				server.addPedClothes(g_Me, clothes[1], clothes[2], k)
+				server.addPedClothes(localPlayer, clothes[1], clothes[2], k)
 			else
-				server.removePedClothes(g_Me, k)
+				server.removePedClothes(localPlayer, k)
 			end
 		end
 	end
@@ -1428,7 +1428,7 @@ function addRemoveUpgrade(selUpgrade)
 		end
 	end
 	
-	if getPlayerOccupiedSeat(g_Me) ~= 0 then
+	if getPlayerOccupiedSeat(localPlayer) ~= 0 then
 		errMsg('Only the driver of the vehicle can add/remove upgrades.')
 		return
 	end
@@ -1478,7 +1478,7 @@ wndUpgrades = {
 function addUpgradeCommand(cmd, upgrade)
 	local vehicle = getPedOccupiedVehicle(localPlayer)
 	if vehicle and upgrade then
-		if getPlayerOccupiedSeat(g_Me) ~= 0 then
+		if getPlayerOccupiedSeat(localPlayer) ~= 0 then
 			errMsg('Only the driver of the vehicle can add/remove upgrades.')
 			return
 		end
@@ -1491,7 +1491,7 @@ addCommandHandler('au', addUpgradeCommand)
 function removeUpgradeCommand(cmd, upgrade)
 	local vehicle = getPedOccupiedVehicle(localPlayer)
 	if vehicle and upgrade then
-		if getPlayerOccupiedSeat(g_Me) ~= 0 then
+		if getPlayerOccupiedSeat(localPlayer) ~= 0 then
 			errMsg('Only the driver of the vehicle can add/remove upgrades.')
 			return
 		end
@@ -1540,7 +1540,7 @@ function setColorCommand(cmd, ...)
 	if not vehicle then
 		return
 	end
-	if getPlayerOccupiedSeat(g_Me) ~= 0 then
+	if getPlayerOccupiedSeat(localPlayer) ~= 0 then
 		errMsg('Only the driver of the vehicle can set its color.')
 		return
 	end
@@ -1557,7 +1557,7 @@ addCommandHandler('cl', setColorCommand)
 function openColorPicker()
 	editingVehicle = getPedOccupiedVehicle(localPlayer)
 	if (editingVehicle) then
-		if getPlayerOccupiedSeat(g_Me) ~= 0 then
+		if getPlayerOccupiedSeat(localPlayer) ~= 0 then
 			errMsg('Only the driver of the vehicle can set its color.')
 			return
 		end
@@ -1585,7 +1585,7 @@ function openColorPicker()
 end
 
 function closedColorPicker()
-	if getPlayerOccupiedSeat(g_Me) ~= 0 then
+	if getPlayerOccupiedSeat(localPlayer) ~= 0 then
 		errMsg('Only the driver of the vehicle can set its color.')
 		return
 	end
@@ -1632,7 +1632,7 @@ function paintjobInit()
 		closeWindow(wndPaintjob)
 		return
 	end
-	if getPlayerOccupiedSeat(g_Me) ~= 0 then
+	if getPlayerOccupiedSeat(localPlayer) ~= 0 then
 		errMsg('Only the driver of the vehicle can change its paintjob.')
 		return
 	end
@@ -1686,7 +1686,7 @@ function setPaintjobCommand(cmd, paint)
 	if not paint or not vehicle then
 		return
 	end
-	if getPlayerOccupiedSeat(g_Me) ~= 0 then
+	if getPlayerOccupiedSeat(localPlayer) ~= 0 then
 		errMsg('Only the driver of the vehicle can change its paintjob.')
 		return
 	end

@@ -1,7 +1,5 @@
-g_Root = getRootElement()
-g_ResRoot = getResourceRootElement(getThisResource())
-g_PlayerData = {}
-g_VehicleData = {}
+local g_PlayerData = {}
+local g_VehicleData = {}
 local chatTime = {}
 local lastChatMessage = {}
 
@@ -35,31 +33,22 @@ g_RPCFunctions = {
 	giveMeVehicles = { option = 'createvehicle', descr = 'Creating vehicles' },
 	giveMeWeapon = { option = 'weapons.enabled', descr = 'Getting weapons' },
 	givePedJetPack = { option = 'jetpack', descr = 'Getting a jetpack' },
-	killPed = { option = 'kill', descr = 'Killing yourself' },
 	removePedClothes = { option = 'clothes', descr = 'Modifying clothes' },
 	removePedFromVehicle = true,
 	removePedJetPack = { option = 'jetpack', descr = 'Removing a jetpack' },
 	removeVehicleUpgrade = { option = 'upgrades', descr = 'Adding/removing upgrades' },
 	setElementAlpha = { option = 'alpha', descr = 'Changing your alpha' },
-	setElementPosition = true,
 	setElementInterior = true,
-	setMyGameSpeed = { option = 'gamespeed.enabled', descr = 'Setting game speed' },
 	setMySkin = { option = 'setskin', descr = 'Setting skin' },
 	setPedAnimation = { option = 'anim', descr = 'Setting an animation' },
 	setPedFightingStyle = { option = 'setstyle', descr = 'Setting fighting style' },
 	setPedGravity = { option = 'gravity.enabled', descr = 'Setting gravity' },
 	setPedStat = { option = 'stats', descr = 'Changing stats' },
-	setTime = { option = 'time.set', descr = 'Changing time' },
-	setTimeFrozen = { option = 'time.freeze', descr = 'Freezing time' },
 	setVehicleColor = true,
 	setVehicleHeadLightColor = true,
 	setVehicleOverrideLights = { option = 'lights', descr = 'Forcing lights' },
 	setVehiclePaintjob = { option = 'paintjob', descr = 'Applying paintjobs' },
-	setVehicleRotation = true,
-	setWeather = { option = 'weather', descr = 'Setting weather' },
-	spawnMe = true,
-	warpMe = { option = 'warp', descr = 'Warping' },
-	setMyPos = true
+	warpMeIntoVehicle = true,
 }
 
 g_OptionDefaults = {
@@ -78,7 +67,6 @@ g_OptionDefaults = {
 		max = 0.1
 	},
 	jetpack = true,
-	kill = true,
 	lights = true,
 	paintjob = true,
 	repair = true,
@@ -87,10 +75,6 @@ g_OptionDefaults = {
 	spawnmaponstart = true,
 	spawnmapondeath = true,
 	stats = true,
-	time = {
-		set = true,
-		freeze = true
-	},
 	upgrades = true,
 	warp = true,
 	weapons = {
@@ -99,7 +83,6 @@ g_OptionDefaults = {
 		disallowed = {},
 		kniferestrictions = true
 	},
-	weather = true,
 	welcometextonstart = true,
 	vehicles = {
 		maxidletime = 60000,
@@ -126,7 +109,7 @@ function getOption(optionName)
 	return option
 end
 
-addEventHandler('onResourceStart', g_ResRoot,
+addEventHandler('onResourceStart', resourceRoot,
 	function()
 		table.each(getElementsByType('player'), joinHandler)
         if getOption('*handlechat') then
@@ -135,59 +118,105 @@ addEventHandler('onResourceStart', g_ResRoot,
 	end
 )
 
+function onLocalSettingChange(setting,value)
+
+	if client ~= source then return end
+	g_PlayerData[client].settings[setting] = value
+	triggerClientEvent("onClientFreeroamLocalSettingChange",client,setting,value)
+
+end
+
 function joinHandler(player)
 	if not player then
 		player = source
 	end
-    g_PlayerData[player] = { vehicles = {} }
-    if getOption('handleblips') then
-        local r, g, b = math.random(50, 255), math.random(50, 255), math.random(50, 255)
-        setPlayerNametagColor(player, r, g, b)
-    	g_PlayerData[player].blip = createBlipAttachedTo(player, 0, 2, r, g, b)
-    end
-	if g_FrozenTime then
-		clientCall(player, 'setTimeFrozen', true, g_FrozenTime[1], g_FrozenTime[2], g_FrozenWeather)
+	g_PlayerData[player] = { vehicles = {} }
+	if getOption('handleblips') then
+		local r, g, b = math.random(50, 255), math.random(50, 255), math.random(50, 255)
+		setPlayerNametagColor(player, r, g, b)
+		g_PlayerData[player].blip = createBlipAttachedTo(player, 0, 2, r, g, b)
 	end
+	addEventHandler("onFreeroamLocalSettingChange",player,onLocalSettingChange)
 	if getOption('welcometextonstart') then
 		outputChatBox('Welcome to Freeroam', player, 0, 255, 0)
 		outputChatBox('Press F1 to show/hide controls #FF8BC4❤', player, 0, 255, 0, true)
 	end
 end
-addEventHandler('onPlayerJoin', g_Root, joinHandler)
+addEventHandler('onPlayerJoin', root, joinHandler)
+
+local settingsToSend = 
+{
+	["command_spam_protection"] = true,
+	["tries_required_to_trigger"] = true,
+	["tries_required_to_trigger_low_priority"] = true,
+	["command_spam_ban_duration"] = true,
+	["command_exception_commands"] = true,
+	["removeHex"] = true,
+	["spawnmapondeath"] = true,
+	["weapons/kniferestrictions"] = true,
+	["kill"] = true,
+	["warp"] = true,
+	["gamespeed/enabled"] = true,
+	["gamespeed/min"] = true,
+	["gamespeed/max"] = true,
+	["gui/antiram"] = true,
+	["gui/disablewarp"] = true,
+	["gui/disableknife"] = true,
+}
+
+local function updateSettings()
+
+	local settings = {}
+	for setting,_ in pairs(settingsToSend) do settings[setting] = getOption(setting) end
+	return settings
+
+end
+
+local function sendSettings(player,settingPlayer,settings)
+
+	for setting,value in pairs(settings) do
+		triggerClientEvent(player,"onClientFreeroamLocalSettingChange",settingPlayer,setting,value)
+	end
+
+end
 
 addEvent('onLoadedAtClient', true)
-addEventHandler('onLoadedAtClient', g_ResRoot,
+addEventHandler('onLoadedAtClient', resourceRoot,
 	function()
 		if getOption('spawnmaponstart') and isPedDead(client) then
 			clientCall(client, 'showWelcomeMap')
 		end
-		local settings = {}
-		settings["command_spam_protection"] = get("command_spam_protection")
-		settings["tries_required_to_trigger"] = get("tries_required_to_trigger")
-		settings["tries_required_to_trigger_low"] = get("tries_required_to_trigger_low_priority")
-		settings["command_spam_ban_duration"] = get("command_spam_ban_duration")
-		clientCall(client, 'spamProtectionSettings', settings)
+		local settings = updateSettings()
+		clientCall(client, 'freeroamSettings', settings)
+		for player,data in pairs(g_PlayerData) do
+			if player ~= client then
+				local settings = data.settings
+				setTimer(sendSettings,1500,1,client,player,settings)
+			end
+		end
 	end,
 	false
 )
 
-addEventHandler('onPlayerWasted', g_Root,
-	function()
-		if not getOption('spawnmapondeath') then
-			return
-		end
-		local player = source
-		setTimer(
-			function()
-				if isPedDead(player) then
-					clientCall(player, 'showMap')
-				end
-			end,
-			2000,
-			1
-		)
+function onSettingChange(key,_,new)
+
+	if not settingsToSend[gettok(key,#split(key,"."),".")] then return end
+	local settings = updateSettings()
+	for index,player in ipairs(getElementsByType("player")) do
+		clientCall(player, 'freeroamSettings', settings)
 	end
-)
+
+end
+
+addEventHandler("onSettingChange",root,onSettingChange)
+
+function showMap(player)
+
+	if isPedDead(player) then
+		clientCall(player, "showMap")
+	end
+
+end
 
 addEvent('onClothesInit', true)
 addEventHandler('onClothesInit', resourceRoot,
@@ -221,9 +250,10 @@ addEventHandler('onClothesInit', resourceRoot,
 )
 
 addEvent('onPlayerGravInit', true)
-addEventHandler('onPlayerGravInit', resourceRoot,
+addEventHandler('onPlayerGravInit', root,
 	function()
-		triggerClientEvent(root, 'onClientPlayerGravInit', resourceRoot, getPedGravity(client))
+		if client ~= source then return end 
+		triggerClientEvent(client, 'onClientPlayerGravInit', client, getPedGravity(client))
 	end
 )
 
@@ -243,7 +273,6 @@ function setMySkin(skinid)
 		setCameraInterior(source, interior)
 	else
 		setElementModel(source, skinid)
-		setElementHealth(source, 100)
 	end
 	setCameraTarget(source, source)
 	setCameraInterior(source, getElementInterior(source))
@@ -259,55 +288,45 @@ function spawnMe(x, y, z)
 		spawnPlayer(source, x, y, z, 0, getPedSkin(source))
 	end
 	
-	if ( getOption('weapons.kniferestrictions') ) then
-		setPlayerKnifeRestricted ( client )
-	end
-	
 	setCameraTarget(source, source)
 	setCameraInterior(source, getElementInterior(source))
 end
 
-function warpMe(targetPlayer)
+function warpMeIntoVehicle(vehicle)
+
+	if not isElement(vehicle) then return end
+
 	if isPedDead(source) then
 		spawnMe()
 	end
-
-	local vehicle = getPedOccupiedVehicle(targetPlayer)
-	local interior = getElementInterior(targetPlayer)
-	if not vehicle then
-		-- target player is not in a vehicle - just warp next to him
-		local x, y, z = getElementPosition(targetPlayer)
-		fadeCamera(source,false,1)
-		setTimer(clientCall,1000,1,source,'setPlayerInterior', x + 2, y, z,interior)
-	else
-		-- target player is in a vehicle - warp into it if there's space left
-		if getPedOccupiedVehicle(source) then
-			--removePlayerFromVehicle(source)
-			outputChatBox('Get out of your vehicle first.', source)
+	
+	if getPedOccupiedVehicle(source) then
+		outputChatBox('Get out of your vehicle first.', source, 255,0,0)
+		return
+	end
+	local interior = getElementInterior(vehicle)
+	local numseats = getVehicleMaxPassengers(vehicle)
+	local driver = getVehicleController(vehicle)
+	for i=0,numseats do
+		if not getVehicleOccupant(vehicle, i) then
+			if isPedDead(source) then
+				local x, y, z = getElementPosition(vehicle)
+				spawnMe(x + 4, y, z + 1)
+			end
+			setElementInterior(source, interior)
+			setCameraInterior(source, interior)
+			warpPedIntoVehicle(source, vehicle, i)
 			return
 		end
-		local numseats = getVehicleMaxPassengers(vehicle)
-		for i=0,numseats do
-			if not getVehicleOccupant(vehicle, i) then
-				if isPedDead(source) then
-					local x, y, z = getElementPosition(vehicle)
-					spawnMe(x + 4, y, z + 1)
-				end
-				setElementInterior(source, interior)
-				setCameraInterior(source, interior)
-				warpPedIntoVehicle(source, vehicle, i)
-				return
-			end
-		end
-		outputChatBox('No free seats left in ' .. getPlayerName(targetPlayer) .. '\'s vehicle.', source, 255, 0, 0)
 	end
+	if isElement(driver) then
+		outputChatBox('No free seats left in ' .. getPlayerName(driver) .. '\'s vehicle.', source, 255, 0, 0)
+	end
+
 end
 
 local sawnoffAntiAbuse = {}
 function giveMeWeapon(weapon, amount)
-	if weapon and weapon > 50 then
-		return
-	end
 	if table.find(getOption('weapons.disallowed'), weapon) then
 		errMsg((getWeaponNameFromID(weapon) or tostring(weapon)) .. 's are not allowed', source)
 	else
@@ -328,67 +347,35 @@ function giveMeWeapon(weapon, amount)
 	end
 end
 
-function killSawnOffTimersOnQuit()
-	if sawnoffAntiAbuse[source] and isTimer (sawnoffAntiAbuse[source]) then
-		killTimer (sawnoffAntiAbuse[source])
-		sawnoffAntiAbuse[source] = nil
-	end
-end
-addEventHandler ("onPlayerQuit", root, killSawnOffTimersOnQuit)
-
-function giveMeVehicles(vehicles)
-	if type(vehicles) == 'number' then
-		vehicles = { vehicles }
-	end
-
+function giveMeVehicles(vehID)
 	local px, py, pz, prot
-	local radius = 3
-	local playerVehicle = getPedOccupiedVehicle(source)
-	if playerVehicle and isElement(playerVehicle) then
-		px, py, pz = getElementPosition(playerVehicle)
-		prot, prot, prot = getVehicleRotation(playerVehicle)
-	else
-		px, py, pz = getElementPosition(source)
-		prot = getPedRotation(source)
-	end
-	local offsetRot = math.rad(prot)
-	local vx = px + radius * math.cos(offsetRot)
-	local vy = py + radius * math.sin(offsetRot)
-	local vz = pz + 2
-	local vrot = prot
-
+	local element = getPedOccupiedVehicle(source) or source
+	local px,py,pz = getElementPosition(element)
+	local _,_,prot = getElementRotation(element)
+	local posVector = Vector3(px,py,pz+2)
+	local rotVector = Vector3(0,0,prot)
+	local vehMatrix = Matrix(posVector,rotVector)
 	local vehicleList = g_PlayerData[source].vehicles
-	local vehicle
-	if ( not vehicles ) then return end
-	for i,vehID in ipairs(vehicles) do
-		if i > getOption('vehicles.maxperplayer') then
-			break
-		end
-		if vehID < 400 or vehID > 611 then
-			errMsg(vehID ..' is incorrect vehicle model', source)
-		elseif not table.find(getOption('vehicles.disallowed'), vehID) then
-			if #vehicleList >= getOption('vehicles.maxperplayer') then
-				unloadVehicle(vehicleList[1])
-			end
-			vehicle = createVehicle(vehID, vx, vy, vz, 0, 0, vrot)
-			if (not isElement(vehicle)) then return end
-			setElementInterior(vehicle, getElementInterior(source))
-			setElementDimension(vehicle, getElementDimension(source))
+	if not vehID then return end
+	if not table.find(getOption('vehicles.disallowed'), vehID) then
+		if #vehicleList >= getOption('vehicles.maxperplayer') then unloadVehicle(vehicleList[1]) end
+		local vehPos = posVector+vehMatrix.right*3
+		local vehicle = Vehicle(vehID, vehPos, rotVector) or false
+		if vehicle then
+			vehicle.interior = source.interior
+			vehicle.dimension = source.dimension
+			if vehicle.vehicleType == "Bike" then vehicle.velocity = Vector3(0,0,-0.01) end
 			table.insert(vehicleList, vehicle)
 			g_VehicleData[vehicle] = { creator = source, timers = {} }
-			if vehID == 464 then
-				warpPedIntoVehicle(source, vehicle)
-			elseif not g_Trailers[vehID] then
+			if g_Trailers[vehID] then
 				if getOption('vehicles.idleexplode') then
 					g_VehicleData[vehicle].timers.fire = setTimer(commitArsonOnVehicle, getOption('vehicles.maxidletime'), 1, vehicle)
 				end
 				g_VehicleData[vehicle].timers.destroy = setTimer(unloadVehicle, getOption('vehicles.maxidletime') + (getOption('vehicles.idleexplode') and 10000 or 0), 1, vehicle)
 			end
-			vx = vx + 4
-			vz = vz + 4
-		else
-			errMsg(getVehicleNameFromModel(vehID):gsub('y$', 'ie') .. 's are not allowed', source)
 		end
+	else
+		errMsg(getVehicleNameFromModel(vehID):gsub('y$', 'ie') .. 's are not allowed', source)
 	end
 end
 
@@ -400,32 +387,6 @@ function setPedGravity(player, grav)
 		errMsg(('Maximum allowed gravity is %.5f'):format(getOption('gravity.max')), player)
 	else
 		_setPlayerGravity(player, grav)
-	end
-end
-
-function setMyGameSpeed(speed)
-	if speed < getOption('gamespeed.min') then
-		errMsg(('Minimum allowed gamespeed is %.5f'):format(getOption('gamespeed.min')), source)
-	elseif speed > getOption('gamespeed.max') then
-		errMsg(('Maximum allowed gamespeed is %.5f'):format(getOption('gamespeed.max')), source)
-	else
-		clientCall(source, 'setGameSpeed', speed)
-	end
-end
-
-function setTimeFrozen(state)
-	if state then
-		g_FrozenTime = { getTime() }
-		g_FrozenWeather = getWeather()
-		clientCall(g_Root, 'setTimeFrozen', state, g_FrozenTime[1], g_FrozenTime[2], g_FrozenWeather)
-	else
-		if g_FrozenTime then
-			setTime(unpack(g_FrozenTime))
-			g_FrozenTime = nil
-			setWeather(g_FrozenWeather)
-			g_FrozenWeather = nil
-		end
-		clientCall(g_Root, 'setTimeFrozen', state)
 	end
 end
 
@@ -459,12 +420,12 @@ function playerChat(msg, type)
 			lastChatMessage[source] = msg
 		end
 		local r, g, b = getPlayerNametagColor(source)
-		outputChatBox(getPlayerName(source) .. ': #FFFFFF' .. msg:gsub('#%x%x%x%x%x%x', ''), g_Root, r, g, b, true)
+		outputChatBox(getPlayerName(source) .. ': #FFFFFF' .. msg:gsub('#%x%x%x%x%x%x', ''), root, r, g, b, true)
 		outputServerLog( "CHAT: " .. getPlayerName(source) .. ": " .. msg )
 	end
 end
 
-addEventHandler('onVehicleEnter', g_Root,
+addEventHandler('onVehicleEnter', root,
 	function(player, seat)
 		if not g_VehicleData[source] then
 			return
@@ -491,58 +452,7 @@ addEventHandler('onVehicleEnter', g_Root,
 	end
 )
 
-function setPlayerKnifeRestricted ( player )
-	g_PlayerData[player].timers = g_PlayerData[player].timers or {}
-	if g_PlayerData[player].timers.knifeProtection then
-		resetTimer ( g_PlayerData[player].timers.knifeProtection )
-	else
-		addEventHandler ( "onPlayerStealthKill", player, knifeCancelEvent )
-		g_PlayerData[player].timers.knifeProtection =  setTimer ( removeKnifeRestrictions, 5000, 1, player )
-	end
-end
-
-function knifeCancelEvent ()
-	outputChatBox ( "Knife restrictions are in place", source, 255, 0, 0 )
-	cancelEvent(true,"Knife restrictions")
-end
-
-function removeKnifeRestrictions (player)
-	if not isElement(player) or getElementType(player) ~= "player" then
-		return
-	end 
-	g_PlayerData[player].timers.knifeProtection = nil
-	removeEventHandler ( "onPlayerStealthKill", player, knifeCancelEvent )
-end
-
-function setMyPos(x, y, z)
-	if not isElement(client) or getElementType(client) ~= "player" then
-		return
-	end 
-	
-	if ( getOption('weapons.kniferestrictions') ) then
-		setPlayerKnifeRestricted ( client )
-	end
-
-	local veh = getPedOccupiedVehicle (client)
-	if veh then
-		if getVehicleController(veh) == client then
-			setElementPosition (veh, x, y, z)
-			setElementInterior (veh, getElementInterior (client))
-			for s = 1, getVehicleMaxPassengers (veh) do
-				local occ = getVehicleOccupant (veh, s)
-				if occ then
-					setElementInterior (occ, getElementInterior(veh))
-				end
-			end
-		else
-			removePedFromVehicle(source)
-		end
-	end
-	setElementPosition (client, x, y, z)
-	fadeCamera (client, true)
-end
-
-addEventHandler('onVehicleExit', g_Root,
+addEventHandler('onVehicleExit', root,
 	function(player, seat)
 		if not g_VehicleData[source] then
 			return
@@ -575,7 +485,7 @@ function commitArsonOnVehicle(vehicle)
 	setElementHealth(vehicle, 0)
 end
 
-addEventHandler('onVehicleExplode', g_Root,
+addEventHandler('onVehicleExplode', root,
 	function()
 		if not g_VehicleData[source] then
 			return
@@ -617,26 +527,20 @@ function unloadVehicle(vehicle)
 end
 
 function quitHandler(player)
-	if type(player) ~= 'userdata' then
-		player = source
+	if g_PlayerData[source].blip and isElement(g_PlayerData[source].blip) then
+		destroyElement(g_PlayerData[source].blip)
 	end
-	if g_PlayerData[player].blip and isElement(g_PlayerData[player].blip) then
-		destroyElement(g_PlayerData[player].blip)
+	if sawnoffAntiAbuse[source] and isTimer (sawnoffAntiAbuse[source]) then
+		killTimer (sawnoffAntiAbuse[source])
+		sawnoffAntiAbuse[source] = nil
 	end
-	table.each(g_PlayerData[player].vehicles, unloadVehicle)
-	g_PlayerData[player] = nil
-	chatTime[player] = nil
-	lastChatMessage[player] = nil
+	table.each(g_PlayerData[source].vehicles, unloadVehicle)
+	removeEventHandler("onFreeroamLocalSettingChange",source,onLocalSettingChange)
+	g_PlayerData[source] = nil
+	chatTime[source] = nil
+	lastChatMessage[source] = nil
 end
-addEventHandler('onPlayerQuit', g_Root, quitHandler)
-
-addEventHandler('onResourceStop', g_ResRoot,
-	function()
-		for player,data in pairs(g_PlayerData) do
-			quitHandler(player)
-		end
-	end
-)
+addEventHandler('onPlayerQuit', root, quitHandler)
 
 addEvent('onServerCall', true)
 addEventHandler('onServerCall', resourceRoot,
@@ -665,5 +569,11 @@ addEventHandler('onServerCall', resourceRoot,
 )
 
 function clientCall(player, fnName, ...)
-	triggerClientEvent(player, 'onClientCall', g_ResRoot, fnName, ...)
+	triggerClientEvent(player, 'onClientCall', resourceRoot, fnName, ...)
 end
+
+function getPlayerName(player)
+	return getOption("removeHex") and player.name:gsub("#%x%x%x%x%x%x","") or player.name
+end
+
+addEvent("onFreeroamLocalSettingChange",true)

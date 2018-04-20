@@ -35,7 +35,7 @@ local function iif( cond, arg1, arg2 )
 	return arg2
 end
 
---scoreboardAddColumn (dataName,source,width,friendlyName,priority,isImage,imageW,imageH) 
+--scoreboardAddColumn (dataName,source,width,friendlyName,priority,isImage,imageW,imageH)
 function scoreboardAddColumn( name, forElement, width, friendlyName, priority, isImage, imageW, imageH )
 	if type( name ) == "string" then
 		width = tonumber( width ) or 70
@@ -43,7 +43,7 @@ function scoreboardAddColumn( name, forElement, width, friendlyName, priority, i
 		priority = tonumber( priority ) or getNextFreePrioritySlot( scoreboardGetColumnPriority( "name" ) )
 		fixPrioritySlot( priority )
 		forElement = iif( type( forElement ) == "userdata" and isElement( forElement ), forElement, getRootElement() )
-		
+
 		if forElement == getRootElement() then
 			if not (priority > MAX_PRIRORITY_SLOT or priority < 1) then
 				for key, value in ipairs( scoreboardColumns ) do
@@ -69,7 +69,7 @@ end
 function scoreboardRemoveColumn( name, forElement )
 	if type( name ) == "string" then
 		forElement = iif( type( forElement ) == "userdata" and isElement( forElement ), forElement, getRootElement() )
-		
+
 		if forElement == getRootElement() then
 			for key, value in ipairs( scoreboardColumns ) do
 				if name == value.name then
@@ -89,7 +89,7 @@ end
 
 function scoreboardClearColumns( forElement )
 	forElement = iif( type( forElement ) == "userdata" and isElement( forElement ), forElement, getRootElement() )
-	
+
 	if forElement == getRootElement() then
 		while ( scoreboardColumns[1] ) do
 			table.remove( scoreboardColumns, 1 )
@@ -103,7 +103,7 @@ end
 
 function scoreboardResetColumns( forElement )
 	forElement = iif( type( forElement ) == "userdata" and isElement( forElement ), forElement, getRootElement() )
-	
+
 	if forElement == getRootElement() then
 		while ( scoreboardColumns[1] ) do
 			table.remove( scoreboardColumns, 1 )

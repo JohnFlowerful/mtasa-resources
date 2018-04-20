@@ -1,4 +1,4 @@
-﻿local customKills = {}
+local customKills = {}
 local config = {
 ["lines"] = 5,
 ["startY"] = 0.35,
@@ -96,13 +96,13 @@ function shiftUpGUI()
 				setWidgetPosition(part,x,targetY + diffY)
 			end
 		end
-	end	
+	end
 	for i=1,config.lines-1 do
 		---shift up the alpha too
 		local tick = fadingLines[i+1]
 		fadingLines[i] = tick
 		fadingLines[i+1] = nil
-	end	
+	end
 end
 
 addEvent ( "doOutputMessage", true )
@@ -110,9 +110,9 @@ function outputMessage ( message, r, g, b, font )
 	if enabled == true then
 		if type(message) ~= "string" and type(message) ~= "table" then
 			outputDebugString ( "outputMessage - Bad 'message' argument", 0, 112, 112, 112 ) 
-			return false 
+			return false
 		end
-		if type(font) ~= "string" then 
+		if type(font) ~= "string" then
 			font = "default"
 		end
 		r = tonumber(r) or 255
@@ -144,7 +144,7 @@ function outputMessage ( message, r, g, b, font )
 		end
 		
 		drawLine ( message, startX, y, config.align, config.lines, r, g, b, font, 1 )
-		fadeLine ( config.lines )	
+		fadeLine ( config.lines )
 	end
 end
 addEventHandler ( "doOutputMessage", getRootElement(), outputMessage )
@@ -178,10 +178,10 @@ function drawLine ( message, x,y, align, line, r, g, b, font, scale )
 				end
 				local image = dxImage:create ( ":"..getResourceName(part.resource).."/"..part.path, width, y + (part.posOffY or config.iconPosOffY), part.width, part.height or config.iconHeight, false )
 				image:color ( part.r or 255, part.g or 255, part.b or 255 )
-				image:rotation ( part.rot or 0, part.rotOffX or 0, part.rotOffY or 0 )				
+				image:rotation ( part.rot or 0, part.rotOffX or 0, part.rotOffY or 0 )
 				width = width + part.width
 				table.insert ( contentMessages[line], image )
-			end	
+			end
 		elseif part[1] == "color" or part[1] == "colour" then
 			r = part.r or r
 			g = part.g or g

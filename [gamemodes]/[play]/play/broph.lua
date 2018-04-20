@@ -1,4 +1,4 @@
-local vehiclesToSpawn = 
+local vehiclesToSpawn =
 {
 	{557, -676.43225097656, 962.98449707031, 12.507791519165, 92.063659667969},
 	{557, -676.67596435547, 968.88238525391, 12.507817268372, 89.458343505859},
@@ -81,7 +81,7 @@ local function spawn(player)
 		setCameraTarget(player, player)
 		showChat(player, true)
 	end
-	
+
 end
 
 local function onJoin()
@@ -100,13 +100,13 @@ end
 local function destroyPlayerVehicles()
 
 	local vehicles = playerVehicles[source]
-	
+
 	for _,vehicle in ipairs(vehicles) do
 		if isElement(vehicle) then
 			destroyElement(vehicle)
 		end
 	end
-	
+
 	playerVehicles[source] = nil
 
 end
@@ -144,7 +144,7 @@ local function destroyTimer()
 end
 
 local function onExit()
-	
+
 	local t = tonumber(get("vehicleExpireTime")) or 600000
 	vehicleDestroyTimers[source] = setTimer(destroyVehicle,(t > 50 and t or 50),1,source)
 	addEventHandler("onVehicleEnter",source,destroyTimer)
@@ -164,16 +164,16 @@ function createNewVehicle(vehicledata)
 end
 
 local function initScript()
-	
+
 	resetMapInfo()
 	local players = getElementsByType("player")
-	
+
 	for _,player in ipairs(players) do spawn(player) end
 	for _,vehicledata in ipairs(vehiclesToSpawn) do createNewVehicle(vehicledata) end
-	
+
 	addEventHandler("onPlayerJoin",root,onJoin)
 	addEventHandler("onPlayerWasted",root,onWasted)
-	
+
 end
 
 addEventHandler("onResourceStart",resourceRoot,initScript)

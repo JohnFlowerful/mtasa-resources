@@ -1,4 +1,4 @@
-﻿local res = getThisResource()
+local res = getThisResource()
 browser = {}
 browserGUI = {}
 BROWSER_DIMENSION = nil
@@ -34,7 +34,7 @@ function createBrowser()
 	--
 	browserGUI.list:addCallback(browser.gridlistSelect)
 	browserGUI.list:addDoubleClickCallback(browser.applySelected)
-		
+
 	addEventHandler ("onClientGUIClick",browserGUI.ok,browser.browserSelected,false)
 	addEventHandler ("onClientGUIClick",browserGUI.cancel,browser.browserCancelled,false)
 end
@@ -153,7 +153,7 @@ end
 
 function browser.gridlistSelect (cellrow)
 	searchModel = false
-	if cellrow == 0 then 
+	if cellrow == 0 then
 		if ( browser.mainElement ) then
 			if isElement(browser.mainElement) then
 				setElementAlpha(browser.mainElement, 0)
@@ -172,7 +172,7 @@ function browser.gridlistSelect (cellrow)
 		if isElement(browser.mainElement) then
 			enableElementLook(true,browser.mainElement)
 		end
-		removeEventHandler ( "onClientRender", getRootElement(), rotateMesh )	
+		removeEventHandler ( "onClientRender", getRootElement(), rotateMesh )
 	end
 	if ( tutorialVars.callBack ) then
 		tutorialNext()
@@ -232,7 +232,7 @@ function createCategoriesTable ( node, nodeid )
 			local reps = string.rep("|  ", nodeid)
 			if reps == nil or reps == false then reps = "" end
 			local name = k
-			
+
 			dropdownArray[progress] =  reps.."|--"..name
 			catNodes[progress] = value
 			progress = progress + 1
@@ -254,7 +254,7 @@ function browser.searchClick()
 		local text = guiGetText ( browserGUI.search )
 		if text == "" then
 			guiSetText ( browserGUI.search, "Search..." )
-		end		
+		end
 		guiSetInputEnabled ( false )
 	end
 end
@@ -281,7 +281,7 @@ function browser.toggleCursor()
 		showCursor(true)
 		disableElementLook(true)
 		guiSetVisible ( browserGUI.window,true)
-		originalRotateTick = getTickCount() - previewTickDifference		
+		originalRotateTick = getTickCount() - previewTickDifference
 		addEventHandler ( "onClientRender", getRootElement(), rotateMesh )
 		local model = tonumber(browserGUI.list:getSelectedText()[2])
 		browserSetElementModel ( initiatedType, model )
@@ -297,7 +297,7 @@ end
 
 function browser.browserSelected(button)
 	if button ~= "left" and button ~= "browser_confirm" then return end
-	
+
 	browser.applySelected()
 end
 
@@ -341,7 +341,7 @@ end
 function setModelText ( text )
 	guiSetText ( browserGUI.searchModel, text )
 	local length = guiLabelGetTextExtent ( browserGUI.searchModel )
-	local x = screenX - length 
+	local x = screenX - length
 	guiSetPosition ( browserGUI.searchModel, x + 1, 17, false )
 end
 

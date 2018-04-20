@@ -144,7 +144,7 @@ function joinHandler(player)
 end
 addEventHandler('onPlayerJoin', root, joinHandler)
 
-local settingsToSend = 
+local settingsToSend =
 {
 	["command_spam_protection"] = true,
 	["tries_required_to_trigger"] = true,
@@ -252,7 +252,7 @@ addEventHandler('onClothesInit', resourceRoot,
 addEvent('onPlayerGravInit', true)
 addEventHandler('onPlayerGravInit', root,
 	function()
-		if client ~= source then return end 
+		if client ~= source then return end
 		triggerClientEvent(client, 'onClientPlayerGravInit', client, getPedGravity(client))
 	end
 )
@@ -287,7 +287,7 @@ function spawnMe(x, y, z)
 	else
 		spawnPlayer(source, x, y, z, 0, getPedSkin(source))
 	end
-	
+
 	setCameraTarget(source, source)
 	setCameraInterior(source, getElementInterior(source))
 end
@@ -299,7 +299,7 @@ function warpMeIntoVehicle(vehicle)
 	if isPedDead(source) then
 		spawnMe()
 	end
-	
+
 	if getPedOccupiedVehicle(source) then
 		outputChatBox('Get out of your vehicle first.', source, 255,0,0)
 		return
@@ -472,7 +472,7 @@ addEventHandler('onVehicleExit', root,
 			toggleControl(player, 'vehicle_fire', true)
 			toggleControl(player, 'vehicle_secondary_fire', true)
 		end
-			
+
 		if g_PlayerData[player].previousGravity then
 			setPedGravity(player, g_PlayerData[player].previousGravity)
 			g_PlayerData[player].previousGravity = nil

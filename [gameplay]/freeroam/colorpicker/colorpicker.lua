@@ -171,13 +171,13 @@ colorPicker = {
 
 		checkColor2 = guiCreateCheckBox(info.selectWindow.ra2X, info.selectWindow.ra2Y,
 												70, 15, "Color 2", false, false, colorPicker.GUI.selectWindow)
-		
+
 		checkColor3 = guiCreateCheckBox(info.selectWindow.ra3X, info.selectWindow.ra3Y,
 												70, 15, "Color 3", false, false, colorPicker.GUI.selectWindow)
-		
+
 		checkColor4 = guiCreateCheckBox(info.selectWindow.ra4X, info.selectWindow.ra4Y,
 												70, 15, "Color 4", false, false, colorPicker.GUI.selectWindow)
-		
+
 		checkColor5 = guiCreateCheckBox(info.selectWindow.ra5X, info.selectWindow.ra5Y,
 												75, 15, "Headlights", false, false, colorPicker.GUI.selectWindow)
 

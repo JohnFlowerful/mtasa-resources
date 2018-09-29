@@ -36,15 +36,16 @@ local g_settings = {}
 local _addCommandHandler = addCommandHandler
 local _setElementPosition = setElementPosition
 
+if not (g_PlayerData) then
+    g_PlayerData = {}
+end
+
 -- Settings are stored in meta.xml
 function freeroamSettings(settings)
 	if settings then
 		g_settings = settings
 		for _,gui in ipairs(disableBySetting) do
 			guiSetEnabled(getControl(gui.parent,gui.id),g_settings["gui/"..gui.id])
-		end
-		for index,player in ipairs(getElementsByType("player")) do
-			updateName(player,getPlayerName(player))
 		end
 	end
 end
@@ -300,11 +301,11 @@ wndWeapon = {
 				{text='Weapon', attr='name'}
 			},
 			rows={xml='weapons.xml', attrs={'id', 'name'}},
-			onitemdoubleclick=function(leaf) addWeapon(leaf, 500) end,
+			onitemdoubleclick=function(leaf) addWeapon(leaf, 1500) end,
 			DoubleClickSpamProtected=true
 		},
 		{'br'},
-		{'txt', id='amount', text='500', width=60},
+		{'txt', id='amount', text='1500', width=60},
 		{'btn', id='add', onclick=addWeapon, ClickSpamProtected=true},
 		{'btn', id='close', closeswindow=true}
 	}
@@ -312,7 +313,7 @@ wndWeapon = {
 
 function giveWeaponCommand(cmd, weapon, amount)
 	weapon = tonumber(weapon) and math.floor(tonumber(weapon)) or weapon and getWeaponIDFromName(weapon) or 0
-	amount = amount and math.floor(tonumber(amount)) or 500
+	amount = amount and math.floor(tonumber(amount)) or 1500
 	if amount < 1 or weapon < 1 or weapon > 46 then return end
 	if internallyBannedWeapons[weapon] then return end
 	server.giveMeWeapon(weapon, amount)
@@ -1191,6 +1192,18 @@ addCommandHandler('getpos', getPosCommand)
 addCommandHandler('gp', getPosCommand)
 
 function setPosCommand(cmd, x, y, z, r)
+
+	nonSPvehicles = {[425]=true, [520]=true, [476]=true, [447]=true, [464]=true, [432]=true}
+
+	local vehicle = getPedOccupiedVehicle(localPlayer)
+	if vehicle then
+	local vehModel = getElementModel(vehicle)
+
+	if (nonSPvehicles[vehModel]) then
+		errMsg("You cannot use /sp while in this vehicle!")
+		return end
+	end
+
 	-- Handle setpos if used like: x, y, z, r or x,y,z,r
 	local x, y, z, r = string.gsub(x or "", ",", " "), string.gsub(y or "", ",", " "), string.gsub(z or "", ",", " "), string.gsub(r or "", ",", " ")
 	-- Extra handling for x,y,z,r
@@ -2011,7 +2024,7 @@ function onEnterVehicle(vehicle,seat)
 end
 
 function onExitVehicle(vehicle,seat)
-	if eventName == "onClientPlayerVehicleExit" and source == localPlayer then
+	if (eventName == "onClientPlayerVehicleExit" and source == localPlayer) or (eventName == "onClientElementDestroy" and getElementType(source) == "vehicle" and getPedOccupiedVehicle(localPlayer) == source) then
 		setControlText(wndMain, 'curvehicle', 'On foot')
 		hideControls(wndMain, 'repair', 'flip', 'upgrades', 'color', 'paintjob', 'lightson', 'lightsoff')
 		closeWindow(wndUpgrades)
@@ -2122,7 +2135,7 @@ end
 addEventHandler('onClientResourceStart', resourceRoot,
 	function()
 		fadeCamera(true)
-		setTimer(getPlayers, 1000, 1)
+		getPlayers()
 		setJetpackMaxHeight ( 9001 )
 		triggerServerEvent('onLoadedAtClient', resourceRoot)
 		createWindow(wndMain)
@@ -2196,9 +2209,8 @@ function wastedHandler()
 end
 
 local function removeForcedFade()
-
 	removeEventHandler("onClientPreRender",root,forceFade)
-
+	fadeCamera(true)
 end
 
 local function checkCustomSpawn()
@@ -2217,6 +2229,7 @@ addEventHandler('onClientPlayerQuit', root, quitHandler)
 addEventHandler('onClientPlayerWasted', root, wastedHandler)
 addEventHandler('onClientPlayerVehicleEnter', root, onEnterVehicle)
 addEventHandler('onClientPlayerVehicleExit', root, onExitVehicle)
+addEventHandler("onClientElementDestroy", root, onExitVehicle)
 addEventHandler("onClientPlayerSpawn", localPlayer, checkCustomSpawn)
 
 function getPlayerName(player)
@@ -2232,12 +2245,14 @@ addEventHandler('onClientResourceStop', resourceRoot,
 
 function setVehicleGhost(sourceVehicle,value)
 
-	local vehicles = getElementsByType("vehicle")
-	for _,vehicle in ipairs(vehicles) do
+	  local vehicles = getElementsByType("vehicle")
+	  for _,vehicle in ipairs(vehicles) do
 		local vehicleGhost = hasDriverGhost(vehicle)
-		setElementCollidableWith(sourceVehicle,vehicle,not value)
-		setElementCollidableWith(vehicle,sourceVehicle,not value)
-		if value == false and vehicleGhost == true then
+		if isElement(sourceVehicle) and isElement(vehicle) then
+		   setElementCollidableWith(sourceVehicle,vehicle,not value)
+		   setElementCollidableWith(vehicle,sourceVehicle,not value)
+		end
+		if value == false and vehicleGhost == true and isElement(sourceVehicle) and isElement(vehicle) then
 			setElementCollidableWith(sourceVehicle,vehicle,not vehicleGhost)
 			setElementCollidableWith(vehicle,sourceVehicle,not vehicleGhost)
 		end

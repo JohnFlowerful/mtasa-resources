@@ -1,10 +1,10 @@
 --[[**********************************
 *
-*	Multi Theft Auto - Admin Panel
+*   Multi Theft Auto - Admin Panel
 *
-*	client\main\admin.lua
+*   client\main\admin.lua
 *
-*	Original File by lil_Toady
+*   Original File by lil_Toady
 *
 **************************************]]
 aAdminMain = {
@@ -42,6 +42,8 @@ function aAdminMain.Open()
         guiCreateLabel(0.75, 0.05, 0.45, 0.04, "Admin Panel by lil_Toady", true, aAdminMain.Form)
         aAdminMain.Panel = guiCreateTabPanel(0.01, 0.05, 0.98, 0.95, true, aAdminMain.Form)
 
+        guiSetInputMode('no_binds_when_editing')
+
         aAdminMain.AddTab("Players", aPlayersTab, "players")
         aAdminMain.AddTab("Resources", aResourcesTab, "resources")
         aAdminMain.AddTab("Server", aServerTab, "server")
@@ -49,6 +51,7 @@ function aAdminMain.Open()
         aAdminMain.AddTab("Admin Chat", aChatTab, "adminchat")
         aAdminMain.AddTab("Rights", aAclTab, "acl")
         aAdminMain.AddTab("Network", aNetworkTab)
+        aAdminMain.AddTab("Options", aOptionsTab)
 
         addEventHandler("onClientGUITabSwitched", aAdminMain.Panel, aAdminMain.Switch)
         addEventHandler("onAdminInitialize", aAdminMain.Form, aAdminMain.Initialize)
@@ -103,6 +106,7 @@ function aAdminMain.Switch(tab)
 end
 
 function aAdminMain.AddTab(name, class, acl)
+    assert(class)
     local tab = guiCreateTab(name, aAdminMain.Panel, acl)
     table.insert(aAdminMain.Tabs, {Tab = tab, Class = class, Loaded = false})
 end

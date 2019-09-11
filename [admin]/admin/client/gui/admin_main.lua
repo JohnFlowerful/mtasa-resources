@@ -346,19 +346,16 @@ y=y+B  aTab1.VehicleHealth	= guiCreateLabel ( 0.26, y, 0.25, 0.04, "Vehicle Heal
 		addEventHandler ( "aClientLog", _root, aClientLog )
 		addEventHandler ( "aClientAdminChat", _root, aClientAdminChat )
 		addEventHandler ( "aClientSync", _root, aClientSync )
-		addEventHandler ( "aMessage", _root, aMessage )
 		addEventHandler ( "aClientResourceStart", _root, aClientResourceStart )
 		addEventHandler ( "aClientResourceStop", _root, aClientResourceStop )
 		addEventHandler ( "aClientPlayerJoin", _root, aClientPlayerJoin )
 		addEventHandler ( "onClientPlayerQuit", _root, aClientPlayerQuit )
-		addEventHandler ( "onClientMouseEnter", _root, aClientMouseEnter )
 		addEventHandler ( "onClientGUIClick", aAdminForm, aClientClick )
 		addEventHandler ( "onClientGUIScroll", aAdminForm, aClientScroll )
 		addEventHandler ( "onClientGUIDoubleClick", aAdminForm, aClientDoubleClick )
 		addEventHandler ( "onClientGUIDoubleClick", aTab1.VehicleOptions, aClientDoubleClick )
 		addEventHandler ( "onClientGUIAccepted", aAdminForm, aClientGUIAccepted )
 		addEventHandler ( "onClientGUIChanged", aAdminForm, aClientGUIChanged )
-		addEventHandler ( "onClientCursorMove", _root, aClientCursorMove )
 		addEventHandler ( "onClientRender", _root, aClientRender )
 		addEventHandler ( "onClientPlayerChangeNick", _root, aClientPlayerChangeNick )
 		addEventHandler ( "onClientResourceStop", _root, aMainSaveSettings )
@@ -405,19 +402,16 @@ function aAdminMenuClose ( destroy )
 		removeEventHandler ( "aClientLog", _root, aClientLog )
 		removeEventHandler ( "aClientAdminChat", _root, aClientAdminChat )
 		removeEventHandler ( "aClientSync", _root, aClientSync )
-		removeEventHandler ( "aMessage", _root, aMessage )
 		removeEventHandler ( "aClientResourceStart", _root, aClientResourceStart )
 		removeEventHandler ( "aClientResourceStop", _root, aClientResourceStop )
 		removeEventHandler ( "aClientPlayerJoin", _root, aClientPlayerJoin )
 		removeEventHandler ( "onClientPlayerQuit", _root, aClientPlayerQuit )
-		removeEventHandler ( "onClientMouseEnter", _root, aClientMouseEnter )
 		removeEventHandler ( "onClientGUIClick", aAdminForm, aClientClick )
 		removeEventHandler ( "onClientGUIScroll", aAdminForm, aClientScroll )
 		removeEventHandler ( "onClientGUIDoubleClick", aAdminForm, aClientDoubleClick )
 		removeEventHandler ( "onClientGUIDoubleClick", aTab1.VehicleOptions, aClientDoubleClick )
 		removeEventHandler ( "onClientGUIAccepted", aAdminForm, aClientGUIAccepted )
 		removeEventHandler ( "onClientGUIChanged", aAdminForm, aClientGUIChanged )
-		removeEventHandler ( "onClientCursorMove", _root, aClientCursorMove )
 		removeEventHandler ( "onClientRender", _root, aClientRender )
 		removeEventHandler ( "onClientPlayerChangeNick", _root, aClientPlayerChangeNick )
 		removeEventHandler ( "onClientResourceStop", _root, aMainSaveSettings )
@@ -712,10 +706,6 @@ function aClientGUITabSwitched( selectedTab )
 	end
 end
 
-function aMessage ( )
-
-end
-
 function aClientResourceStart ( resource )
 	local id = 0
 	while ( id <= guiGridListGetRowCount( aTab2.ResourceList ) ) do
@@ -929,16 +919,6 @@ end
 function aClientScroll ( element )
 	if ( source == aTab6.MouseSense ) then
 		guiSetText ( aTab6.MouseSenseCur, "Cursor sensivity: ("..string.sub ( guiScrollBarGetScrollPosition ( source ) / 50, 0, 4 )..")" )
-	end
-end
-
-function aClientCursorMove ( rx, ry, x, y )
-
-end
-
-function aClientMouseEnter ( element )
-	if ( getElementType ( source ) == "gui-button" ) then
-
 	end
 end
 

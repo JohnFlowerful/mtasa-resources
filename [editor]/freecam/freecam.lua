@@ -332,5 +332,5 @@ addEventHandler("doSetFreecamDisabled", root, setFreecamDisabled)
 addEvent("doSetFreecamStatic", true)
 addEventHandler("doSetFreecamStatic", root, setFreecamStatic)
 
-addEvent("doSetFreecamOption")
+addEvent("doSetFreecamOption", true)
 addEventHandler("doSetFreecamOption", root, setFreecamOption)

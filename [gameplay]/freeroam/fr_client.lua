@@ -282,6 +282,10 @@ function addWeapon(leaf, amount)
 		errMsg("Invalid amount")
 		return
 	end
+	if isPedReloadingWeapon(localPlayer) then
+		errMsg ("You can't get weapons while reloading a weapon!")
+		return 
+	end
 	server.giveMeWeapon(leaf.id, amount)
 end
 
@@ -325,7 +329,8 @@ function giveWeaponCommand(cmd, weapon, amount)
 	amount = amount and math.floor(tonumber(amount)) or 1500
 	if amount < 1 or weapon < 1 or weapon > 46 then return end
 	if internallyBannedWeapons[weapon] then return end
-	if isPlayerAiming(localPlayer) then errMsg ("You can't use this command while aiming a gun!") return end
+	if isPlayerAiming(localPlayer) then errMsg ("You can't use this command while aiming a weapon!") return end
+	if isPedReloadingWeapon(localPlayer) then errMsg ("You can't use this command while reloading a weapon!") return end
 	server.giveMeWeapon(weapon, amount)
 end
 addCommandHandler('give', giveWeaponCommand)
@@ -2303,8 +2308,8 @@ local function renderKnifingTag()
 	if not g_PlayerData then return end
 	for _,p in ipairs (getElementsByType ("player", root, true)) do
 		if g_PlayerData[p] and g_PlayerData[p].knifing then
-			local px,py,pz = getElementPosition(p)
-			local x,y,d = getScreenFromWorldPosition (px, py, pz+1.3)
+			local px,py,pz = getPedBonePosition(p, 6)
+			local x,y,d = getScreenFromWorldPosition (px, py, pz+0.5)
 			if x and y and d < 20 then
 				dxDrawText ("Disabled Knifing", x+1, y+1, x, y, tocolor (0, 0, 0), 0.5, "bankgothic", "center")
 				dxDrawText ("Disabled Knifing", x, y, x, y, tocolor (220, 220, 0), 0.5, "bankgothic", "center")

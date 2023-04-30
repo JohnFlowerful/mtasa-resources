@@ -28,10 +28,7 @@ function outputKillMessage(player, pR, pG, pB, killer, kR, kG, kB, weapon)
             return false
         end
         killerName = getPlayerName(killer)
-        if (not killer == player) then
-            playDeathSound(killer, "sounds/smb_powerup.wav")
-        end
-        playDeathSound(player, "sounds/smb_mariodie.wav")
+        playDeathSound(killer, "sounds/smb_powerup.wav")
 
     elseif (type(killer) == 'string') then
         killerName = killer
@@ -53,6 +50,7 @@ function outputKillMessage(player, pR, pG, pB, killer, kR, kG, kB, weapon)
         }
     end
 
+    playDeathSound(player, "sounds/smb_mariodie.wav")
     return outputMessage(message)
 end
 

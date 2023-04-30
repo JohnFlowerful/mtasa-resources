@@ -5,9 +5,6 @@ local DEF_KeyBind = "0"
 -- End of Defines don't edit below here if you don't know what you are doing.
 
 
-
-
-
 local windowMultiplier = 0
 local myWindow = guiCreateWindow ( 0.35, 0.3, 0.4, 0.4, "Siren Script", true )
 
@@ -69,7 +66,7 @@ guiComboBoxAddItem ( sirenType, "Dual" )
 guiComboBoxSetSelected ( sirens, 0 )
 guiComboBoxSetSelected ( numberOfSirens, 0 )
 function sirenCmd()
-	local veh = getPedOccupiedVehicle ( getLocalPlayer() )
+	local veh = getPedOccupiedVehicle ( localPlayer )
 	if ( guiGetVisible ( myWindow ) == false ) then
 	if ( veh ~= false ) then
 		guiSetVisible ( myWindow, true )
@@ -109,7 +106,7 @@ function applySirenTable ( veh, sirenTable, bSync )
 	end
 end
 function InitUI ( )
-	local veh = getPedOccupiedVehicle ( getLocalPlayer() )
+	local veh = getPedOccupiedVehicle ( localPlayer )
 	local selectedItem = guiComboBoxGetSelected ( sirens ) + 1
 	if ( veh ) then
 		local sirensTable = getVehicleSirens(veh)
@@ -139,7 +136,7 @@ end
 InitUI ( )
 
 function scrollFunc(scrolled)
-	local veh = getPedOccupiedVehicle ( getLocalPlayer() )
+	local veh = getPedOccupiedVehicle ( localPlayer )
 	local selectedItem = guiComboBoxGetSelected ( sirens ) + 1
 	if ( selectedItem ~= nil and selectedItem ~= false and selectedItem > 0 and veh ~= false ) then
 		if ( scrolled == sirensX ) then
@@ -182,7 +179,7 @@ end
 addEventHandler("onClientGUIScroll", root, scrollFunc)
 local bSelecting = false
 function btnFunc ( button, state )
-	local veh = getPedOccupiedVehicle ( getLocalPlayer() )
+	local veh = getPedOccupiedVehicle ( localPlayer )
 	if ( veh ~= false ) then
 		if ( source == sirensBtnRGB ) then
 			if ( state == "up" ) then
@@ -233,7 +230,7 @@ end
 addEventHandler("onClientGUIClick", root, btnFunc)
 
 function PickedBeaconStuff ( element, hex, red, green, blue )
-	local veh = getPedOccupiedVehicle ( getLocalPlayer() )
+	local veh = getPedOccupiedVehicle ( localPlayer )
 	local selectedItem = guiComboBoxGetSelected ( sirens ) + 1
 	if ( selectedItem ~= nil and selectedItem ~= false and selectedItem > 0 and veh ~= false ) then
 		local sirensTable = getVehicleSirens(veh)
@@ -247,7 +244,7 @@ end
 
 addEventHandler("onColorPickerOK", root, PickedBeaconStuff)
 function SelectedSiren ( )
-	local veh = getPedOccupiedVehicle ( getLocalPlayer() )
+	local veh = getPedOccupiedVehicle ( localPlayer )
 	if ( veh ~= false ) then
 		if ( source == sirens ) then
 			InitUI()
@@ -281,7 +278,7 @@ function fixOutput ( out )
 end
 
 function test ( button, state, l, f, x, y, z, element )
-	local veh = getPedOccupiedVehicle ( getLocalPlayer() )
+	local veh = getPedOccupiedVehicle ( localPlayer )
 	if ( element == veh and veh ~= false and bSelecting == true ) then
 		local selectedItem = guiComboBoxGetSelected ( sirens ) + 1
 		local sirensTable = getVehicleSirens(veh)

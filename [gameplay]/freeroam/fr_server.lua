@@ -32,10 +32,8 @@ g_RPCFunctions = {
 	fixVehicle = { option = 'repair', descr = 'Repairing vehicles' },
 	giveMeVehicles = { option = 'createvehicle', descr = 'Creating vehicles' },
 	giveMeWeapon = { option = 'weapons.enabled', descr = 'Getting weapons' },
-	givePedJetPack = { option = 'jetpack', descr = 'Getting a jetpack' },
 	removePedClothes = { option = 'clothes', descr = 'Modifying clothes' },
 	removePedFromVehicle = true,
-	removePedJetPack = { option = 'jetpack', descr = 'Removing a jetpack' },
 	removeVehicleUpgrade = { option = 'upgrades', descr = 'Adding/removing upgrades' },
 	setElementAlpha = { option = 'alpha', descr = 'Changing your alpha' },
 	setElementInterior = true,
@@ -44,6 +42,7 @@ g_RPCFunctions = {
 	setPedFightingStyle = { option = 'setstyle', descr = 'Setting fighting style' },
 	setPedGravity = { option = 'gravity.enabled', descr = 'Setting gravity' },
 	setPedStat = { option = 'stats', descr = 'Changing stats' },
+	setPedWearingJetpack = { option = 'jetpack', descr = 'Adding/removing a jetpack' },
 	setVehicleColor = true,
 	setVehicleHeadLightColor = true,
 	setVehicleOverrideLights = { option = 'lights', descr = 'Forcing lights' },
@@ -130,13 +129,13 @@ function joinHandler(player)
 	if not player then
 		player = source
 	end
-	g_PlayerData[player] = { vehicles = {}, settings = {} }
-	if getOption('handleblips') then
+	if getOption('nametagcolors') then
 		local r, g, b = math.random(50, 255), math.random(50, 255), math.random(50, 255)
 		setPlayerNametagColor(player, r, g, b)
-		g_PlayerData[player].blip = createBlipAttachedTo(player, 0, 2, r, g, b)
 	end
+	g_PlayerData[player] = { vehicles = {}, settings = {} }
 	addEventHandler("onFreeroamLocalSettingChange",player,onLocalSettingChange)
+
 	if getOption('welcometextonstart') then
 		outputChatBox('Welcome to Freeroam', player, 0, 255, 0)
 		outputChatBox('Press F1 to show/hide controls #FF8BC4❤', player, 0, 255, 0, true)
@@ -167,9 +166,11 @@ local settingsToSend = {
 
 local function updateSettings()
 	local settings = {}
+
 	for _, setting in ipairs(settingsToSend) do
 		settings[setting] = getOption(setting)
 	end
+
 	return settings
 end
 
@@ -195,8 +196,8 @@ addEventHandler('onLoadedAtClient', resourceRoot,
 		clientCall(client, 'freeroamSettings', settings)
 		for player,data in pairs(g_PlayerData) do
 			if player ~= client then
-				local settings = data.settings
-				setTimer(sendSettings,1500,1,client,player,settings)
+				local settings2 = data.settings
+				setTimer(sendSettings,1500,1,client,player,settings2)
 			end
 		end
 	end,
@@ -227,50 +228,57 @@ end
 addEventHandler("onSettingChange", root, onSettingChange)
 
 function showMap(player)
-
 	if isPedDead(player) then
 		clientCall(player, "showMap")
 	end
-
 end
 
-addEvent('onClothesInit', true)
-addEventHandler('onClothesInit', resourceRoot,
-	function()
-		local result = {}
-		local texture, model
-		-- get all clothes
-		result.allClothes = {}
-		local typeGroup, index
-		for type=0,17 do
-			typeGroup = {'group', type = type, name = getClothesTypeName(type), children = {}}
-			table.insert(result.allClothes, typeGroup)
-			index = 0
+
+function handleClothesInit()
+
+	if not client or source ~= resourceRoot then
+		return
+	end
+
+	local result = {}
+	local texture, model
+	-- get all clothes
+	result.allClothes = {}
+	local typeGroup, index
+
+	for type=0,17 do
+		typeGroup = {'group', type = type, name = getClothesTypeName(type), children = {}}
+		table.insert(result.allClothes, typeGroup)
+		index = 0
+		texture, model = getClothesByTypeIndex(type, index)
+		while texture do
+			table.insert(typeGroup.children, {id = index, texture = texture, model = model})
+			index = index + 1
 			texture, model = getClothesByTypeIndex(type, index)
-			while texture do
-				table.insert(typeGroup.children, {id = index, texture = texture, model = model})
-				index = index + 1
-				texture, model = getClothesByTypeIndex(type, index)
-			end
-		end
-		-- get current player clothes { type = {texture=texture, model=model} }
-		result.playerClothes = {}
-		for type=0,17 do
-			texture, model = getPedClothes(client, type)
-			if texture then
-				result.playerClothes[type] = {texture = texture, model = model}
-			end
-		end
-		if client and isElement(client) then
-			triggerClientEvent(client, "onClientClothesInit", resourceRoot, result)
 		end
 	end
-)
+
+	-- get current player clothes { type = {texture=texture, model=model} }
+	result.playerClothes = {}
+
+	for type=0,17 do
+		texture, model = getPedClothes(client, type)
+		if texture then
+			result.playerClothes[type] = {texture = texture, model = model}
+		end
+	end
+
+	if client and isElement(client) then
+		triggerClientEvent(client, "onClientClothesInit", resourceRoot, result)
+	end
+end
+addEvent('onClothesInit', true)
+addEventHandler('onClothesInit', resourceRoot, handleClothesInit)
 
 addEvent('onPlayerGravInit', true)
 addEventHandler('onPlayerGravInit', root,
 	function()
-		if client ~= source then return end
+		if source ~= client then return end
 		if client and isElement(client) then
 			triggerClientEvent(client, "onClientPlayerGravInit", client, getPedGravity(client))
 		end
@@ -281,12 +289,14 @@ function setMySkin(skinid)
 	if not isElement(source) then return end
 	if getElementModel(source) == skinid then return end
 	if isPedDead(source) then
-		local x, y, z = getElementPosition(source)
+	local x, y, z = getElementPosition(source)
+
 		if isPedTerminated(source) then
 			x = 0
 			y = 0
 			z = 3
 		end
+
 		local r = getPedRotation(source)
 		local interior = getElementInterior(source)
 		spawnPlayer(source, x, y, z, r, skinid)
@@ -303,6 +313,7 @@ function spawnMe(x, y, z)
 	if not x then
 		x, y, z = getElementPosition(source)
 	end
+
 	if isPedTerminated(source) then
 		repeat until spawnPlayer(source, x, y, z, 0, math.random(9, 288))
 	else
@@ -330,10 +341,12 @@ function warpMeIntoVehicle(vehicle)
 	local driver = getVehicleController(vehicle)
 	for i=0,numseats do
 		if not getVehicleOccupant(vehicle, i) then
+
 			if isPedDead(source) then
 				local x, y, z = getElementPosition(vehicle)
 				spawnMe(x + 4, y, z + 1)
 			end
+
 			setElementInterior(source, interior)
 			setCameraInterior(source, interior)
 			warpPedIntoVehicle(source, vehicle, i)
@@ -370,7 +383,6 @@ end
 
 function giveMeVehicles(vehID)
 	if not isElement(source) then return end
-	local px, py, pz, prot
 	local element = getPedOccupiedVehicle(source) or source
 	local px,py,pz = getElementPosition(element)
 	local _,_,prot = getElementRotation(element)
@@ -416,9 +428,11 @@ end
 
 function fadeVehiclePassengersCamera(toggle)
 	local vehicle = getPedOccupiedVehicle(source)
+
 	if not vehicle then
 		return
 	end
+
 	local player
 	for i=0,getVehicleMaxPassengers(vehicle) do
 		player = getVehicleOccupant(vehicle, i)
@@ -458,18 +472,22 @@ addEventHandler('onVehicleEnter', root,
 		if not g_VehicleData[source] then
 			return
 		end
+
 		if g_VehicleData[source].timers.fire then
 			killTimer(g_VehicleData[source].timers.fire)
 			g_VehicleData[source].timers.fire = nil
 		end
+
 		if g_VehicleData[source].timers.destroy then
 			killTimer(g_VehicleData[source].timers.destroy)
 			g_VehicleData[source].timers.destroy = nil
 		end
+
 		if not getOption('weapons.vehiclesenabled') and g_ArmedVehicles[getElementModel(source)] then
 			toggleControl(player, 'vehicle_fire', false)
 			toggleControl(player, 'vehicle_secondary_fire', false)
 		end
+
 		-- Fast Hunter/Hydra on custom gravity fix
 		if getElementModel(source) == 425 or getElementModel(source) == 520 then
 			if getPedGravity(player) ~= 0.008 then
@@ -485,6 +503,7 @@ addEventHandler('onVehicleExit', root,
 		if not g_VehicleData[source] then
 			return
 		end
+
 		if not g_VehicleData[source].timers.fire then
 			for i=0,getVehicleMaxPassengers(source) or 1 do
 				if getVehicleOccupant(source, i) then
@@ -520,13 +539,16 @@ addEventHandler('onVehicleExplode', root,
 		if not g_VehicleData[source] then
 			return
 		end
+
 		if g_VehicleData[source].timers.fire then
 			killTimer(g_VehicleData[source].timers.fire)
 			g_VehicleData[source].timers.fire = nil
 		end
+
 		if not g_VehicleData[source].timers.destroy then
 			g_VehicleData[source].timers.destroy = setTimer(unloadVehicle, 5000, 1, source)
 		end
+
 		if getVehicleController(source) then
 			if g_PlayerData[getVehicleController(source)].previousGravity then
 				setPedGravity(getVehicleController(source), g_PlayerData[getVehicleController(source)].previousGravity)
@@ -540,16 +562,20 @@ function unloadVehicle(vehicle)
 	if not g_VehicleData[vehicle] then
 		return
 	end
+
 	for name,timer in pairs(g_VehicleData[vehicle].timers) do
 		if isTimer(timer) then
 			killTimer(timer)
 		end
 		g_VehicleData[vehicle].timers[name] = nil
 	end
+
 	local creator = g_VehicleData[vehicle].creator
+
 	if g_PlayerData[creator] then
 		table.removevalue(g_PlayerData[creator].vehicles, vehicle)
 	end
+
 	g_VehicleData[vehicle] = nil
 	if isElement(vehicle) then
 		destroyElement(vehicle)
@@ -557,13 +583,11 @@ function unloadVehicle(vehicle)
 end
 
 function quitHandler(player)
-	if g_PlayerData[source].blip and isElement(g_PlayerData[source].blip) then
-		destroyElement(g_PlayerData[source].blip)
-	end
 	if sawnoffAntiAbuse[source] and isTimer (sawnoffAntiAbuse[source]) then
 		killTimer (sawnoffAntiAbuse[source])
 		sawnoffAntiAbuse[source] = nil
 	end
+
 	table.each(g_PlayerData[source].vehicles, unloadVehicle)
 	removeEventHandler("onFreeroamLocalSettingChange",source,onLocalSettingChange)
 	g_PlayerData[source] = nil
@@ -607,3 +631,13 @@ function getPlayerName(player)
 end
 
 addEvent("onFreeroamLocalSettingChange",true)
+
+
+function handleSuicide()
+	if source ~= client then return end
+	if client and isElement(client) and (not isPedDead(client)) then
+		killPed(client, client)
+	end
+end
+addEvent('onFreeroamSuicide', true)
+addEventHandler('onFreeroamSuicide', root, handleSuicide)

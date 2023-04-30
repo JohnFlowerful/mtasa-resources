@@ -69,8 +69,8 @@ function aTeam.onDoubleClick(button)
         if (source == aTeam.List) then
             if (guiGridListGetSelectedItem(aTeam.List) ~= -1) then
                 local team = guiGridListGetItemText(aTeam.List, guiGridListGetSelectedItem(aTeam.List), 1)
-                triggerServerEvent("aPlayer", getLocalPlayer(), getSelectedPlayer(), "setteam", getTeamFromName(team))
-                aPlayerTeamClose(false)
+                triggerServerEvent("aPlayer", localPlayer, getSelectedPlayer(), "setteam", getTeamFromName(team))
+                aTeam.Close(false)
             end
         end
     end
@@ -88,7 +88,7 @@ function aTeam.onClick(button)
             else
                 local team = guiGridListGetItemData(aTeam.List, guiGridListGetSelectedItem(aTeam.List), 1)
                 if (messageBox('Are you sure to delete "' .. getTeamName(team) .. '"?', MB_QUESTION, MB_YESNO)) then
-                    triggerServerEvent("aTeam", getLocalPlayer(), "destroyteam", team)
+                    triggerServerEvent("aTeam", localPlayer, "destroyteam", team)
                 end
             end
             setTimer(aTeam.Refresh, 2000, 1)
@@ -101,7 +101,7 @@ function aTeam.onClick(button)
             else
                 triggerServerEvent(
                     "aTeam",
-                    getLocalPlayer(),
+                    localPlayer,
                     "createteam",
                     team,
                     guiGetText(aTeam.Red),
@@ -120,7 +120,7 @@ function aTeam.onClick(button)
                 messageBox("No team selected!", MB_WARNING)
             else
                 local team = guiGridListGetItemData(aTeam.List, guiGridListGetSelectedItem(aTeam.List), 1)
-                triggerServerEvent("aPlayer", getLocalPlayer(), getSelectedPlayer(), "setteam", team)
+                triggerServerEvent("aPlayer", localPlayer, getSelectedPlayer(), "setteam", team)
                 guiSetVisible(aTeam.Form, false)
             end
         elseif (source == aTeam.Hide) then
@@ -147,13 +147,15 @@ end
 
 function aTeam.Refresh()
     if (aTeam.List) then
+        local sortDirection = guiGetProperty(aTeam.List, "SortDirection")
         guiGridListClear(aTeam.List)
+        guiSetProperty(aTeam.List, "SortDirection", "None")
         for id, team in ipairs(getElementsByType("team")) do
-            local row = guiGridListAddRow(aTeam.List)
+            local row = guiGridListAddRow(aTeam.List, getTeamName(team))
             local r, g, b = getTeamColor(team)
-            guiGridListSetItemText(aTeam.List, row, 1, getTeamName(team), false, false)
             guiGridListSetItemColor(aTeam.List, row, 1, r, g, b)
             guiGridListSetItemData(aTeam.List, row, 1, team)
         end
+        guiSetProperty(aTeam.List, "SortDirection", sortDirection)
     end
 end

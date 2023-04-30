@@ -16,7 +16,7 @@ end
 local specialSyncers = {
 	position = function() end,
 	rotation = function() end,
-	dimension = function(element) return 0 end,
+	dimension = function(element) return getElementData(element, "me:dimension") or 0 end,
 	interior = function(element) return edf.edfGetElementInterior(element) end,
 	alpha = function(element) return edf.edfGetElementAlpha(element) end,
 	parent = function(element) return getElementData(element, "me:parent") end,
@@ -75,14 +75,52 @@ function dumpNodes ( xmlNode, elementTable, elementChildren )
 	end
 end
 
+local function syncMapMinVersion(mapXml)
+	local metaFile = xmlLoadFile("meta.xml")
+
+	if not metaFile then
+		return false
+	end
+
+	local editorMinVer = xmlFindChild(metaFile, "min_mta_version", 0)
+
+	if editorMinVer then
+		local mapVersionNode = xmlFindChild(mapXml, "min_mta_version", 0) or xmlCreateChild(mapXml, "min_mta_version")
+
+		if mapVersionNode then
+			local clientMinVer = xmlNodeGetAttribute(editorMinVer, "client")
+			local serverMinVer = xmlNodeGetAttribute(editorMinVer, "server")
+
+			if clientMinVer then
+				xmlNodeSetAttribute(mapVersionNode, "client", clientMinVer)
+			end
+
+			if serverMinVer then
+				xmlNodeSetAttribute(mapVersionNode, "server", serverMinVer)
+			end
+		end
+	end
+
+	xmlUnloadFile(metaFile)
+
+	return true
+end
+
 function dumpMeta ( xml, extraNodes, resource, filename, test )
-	if not resource then return false end
+	if not resource then
+		return false
+	end
+
 	dimension = dimension or 0
 	extraNodes = extraNodes or {}
 
+	-- Fetch min_mta_version from editor_main meta.xml
+
+	syncMapMinVersion(xml)
+
 	--Add OOP support
-	local oopNode = xmlCreateChild(xml, "oop")
-	xmlNodeSetValue(oopNode, "true")
+	--[[local oopNode = xmlCreateChild(xml, "oop")
+	xmlNodeSetValue(oopNode, "true")]]
 
 	--[[ info tag ]]--
 	local infoNode = xmlCreateChild(xml, "info")
@@ -171,8 +209,8 @@ function dumpMeta ( xml, extraNodes, resource, filename, test )
 	end
 	fileCopy("server/"..scriptName, ":"..getResourceName(resource).."/"..scriptName, true)
 
-	local scriptName = "mapEditorScriptingExtension_c.lua"
-	local foundScriptInMeta = false
+	scriptName = "mapEditorScriptingExtension_c.lua"
+	foundScriptInMeta = false
 	for i, child in ipairs(xmlNodeGetChildren(xml)) do
 		if (xmlNodeGetAttribute(child, "src") == scriptName) then
 			foundScriptInMeta = true

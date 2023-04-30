@@ -19,11 +19,15 @@ propertyGetters = {
 		end,
 		scale = getObjectScale,
 		breakable = function(element)
-			local breakable = getElementData(element,"breakable")
-			if breakable =="true" or breakable == false then
-				return "true"
+			if isObjectBreakable then
+				return isObjectBreakable(element) and "true" or "false"
 			else
-				return "false"
+				local breakable = getElementData(element, "breakable")
+				if breakable == "true" or breakable == false then
+					return "true"
+				else
+					return "false"
+				end
 			end
 		end,
 		collisions = function(element)
@@ -167,7 +171,11 @@ propertySetters = {
 			return false
 		end,
 		breakable = function(element, breakable)
-			return setElementData(element,"breakable",breakable=="true" and "true" or "false")
+			if setObjectBreakable then
+				return setObjectBreakable(element, breakable == "true")
+			else
+				return setElementData(element, "breakable", breakable == "true" and "true" or "false")
+			end
 		end,
 		collisions = function(element, state)
 			return setElementData(element, "collisions", state == "false" and "false" or "true")
@@ -189,7 +197,7 @@ propertySetters = {
 		model = setElementModel,
 		color1 = function(element, colorsTable)
 			if colorsTable then
-				local colorsTable = {getColorFromString(colorsTable)}
+				colorsTable = {getColorFromString(colorsTable)}
 				local otherColors = {getVehicleColor(element, true)}
 				return setVehicleColor(element, colorsTable[1], colorsTable[2], colorsTable[3], otherColors[4], otherColors[5], otherColors[6], otherColors[7], otherColors[8], otherColors[9], otherColors[10], otherColors[11], otherColors[12])
 			else
@@ -198,7 +206,7 @@ propertySetters = {
 		end,
 		color2 = function(element, colorsTable)
 			if colorsTable then
-				local colorsTable = {getColorFromString(colorsTable)}
+				colorsTable = {getColorFromString(colorsTable)}
 				local otherColors = {getVehicleColor(element, true)}
 				return setVehicleColor(element, otherColors[1], otherColors[2], otherColors[3], colorsTable[1], colorsTable[2], colorsTable[3], otherColors[7], otherColors[8], otherColors[9], otherColors[10], otherColors[11], otherColors[12])
 			else
@@ -207,7 +215,7 @@ propertySetters = {
 		end,
 		color3 = function(element, colorsTable)
 			if colorsTable then
-				local colorsTable = {getColorFromString(colorsTable)}
+				colorsTable = {getColorFromString(colorsTable)}
 				local otherColors = {getVehicleColor(element, true)}
 				return setVehicleColor(element, colorsTable[1], colorsTable[2], colorsTable[3], otherColors[4], otherColors[5], otherColors[6], colorsTable[1], colorsTable[2], colorsTable[3], otherColors[10], otherColors[11], otherColors[12])
 			else
@@ -216,7 +224,7 @@ propertySetters = {
 		end,
 		color4 = function(element, colorsTable)
 			if colorsTable then
-				local colorsTable = {getColorFromString(colorsTable)}
+				colorsTable = {getColorFromString(colorsTable)}
 				local otherColors = {getVehicleColor(element, true)}
 				return setVehicleColor(element, colorsTable[1], colorsTable[2], colorsTable[3], otherColors[4], otherColors[5], otherColors[6], otherColors[7], otherColors[8], otherColors[9], colorsTable[1], colorsTable[2], colorsTable[3])
 			else

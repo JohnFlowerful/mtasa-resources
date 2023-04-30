@@ -2,9 +2,6 @@
 -- util_tt_server.lua
 --
 
-g_Root = getRootElement()
-g_ResRoot = getResourceRootElement(getThisResource())
-
 function clientCall(player, fnName, ...)
 	triggerClientEvent(onlyJoined(player), 'onClientCall_tt', player, fnName, ...)
 end
@@ -23,7 +20,7 @@ function allowRPC(...)
 end
 
 addEvent('onServerCall_tt', true)
-addEventHandler('onServerCall_tt', getRootElement(),
+addEventHandler('onServerCall_tt', root,
 	function(fnName, ...)
 		if g_AllowedRPCFunctions[fnName] then
 			local fn = _G
@@ -34,7 +31,6 @@ addEventHandler('onServerCall_tt', getRootElement(),
 		end
 	end
 )
-
 
 
 function isPlayerInACLGroup(player, groupName)

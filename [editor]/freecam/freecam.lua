@@ -95,11 +95,11 @@ local function freecamFrame ()
 			-- Check to see if the forwards/backwards keys are pressed
 			local speedKeyPressed = false
 			if ( getKeyState ( options.key_forward ) or getKeyState ( options.key_forward_veh ) ) and not getKeyState("arrow_u") then
-				speed = speed + acceleration 
+				speed = speed + acceleration
 				speedKeyPressed = true
 			end
 			if ( getKeyState ( options.key_backward ) or getPedControlState ( localPlayer, options.key_backward_veh ) ) and not getKeyState("arrow_d") then
-				speed = speed - acceleration 
+				speed = speed - acceleration
 				speedKeyPressed = true
 			end
 

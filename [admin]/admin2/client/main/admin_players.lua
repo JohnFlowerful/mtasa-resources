@@ -23,8 +23,8 @@ function aPlayersTab.Create(tab)
     guiGridListAddColumn(aPlayersTab.PlayerList, "Player list", 0.85)
     aPlayersTab.Context = guiCreateContextMenu(aPlayersTab.PlayerList)
     aPlayersTab.ContextKick = guiContextMenuAddItem(aPlayersTab.Context, "Kick")
-    aPlayersTab.ColorCodes = guiCreateCheckBox(0.01, 0.95, 0.25, 0.04, "Hide color codes", aGetSetting('hideColorCodes') or false, true, tab)
-    aPlayersTab.SensitiveData = guiCreateCheckBox(0.2, 0.95, 0.25, 0.04, "Hide Sensitive Data", aGetSetting('hideSensitiveData') or false, true, tab)
+    aPlayersTab.ColorCodes = guiCreateCheckBox(0.01, 0.95, 0.15, 0.04, "Hide color codes", aGetSetting('hideColorCodes') or false, true, tab)
+    aPlayersTab.SensitiveData = guiCreateCheckBox(0.2, 0.95, 0.17, 0.04, "Hide Sensitive Data", aGetSetting('hideSensitiveData') or false, true, tab)
 
     -- Player info (middle pane)
     guiCreateHeader(0.27, 0.04, 0.20, 0.04, "Player:", true, tab)
@@ -74,7 +74,7 @@ function aPlayersTab.Create(tab)
     aPlayersTab.Shout = guiCreateButton(0.74, 0.19, 0.12, 0.04, "Shout", true, tab, "shout")
     aPlayersTab.Spectate = guiCreateButton(0.87, 0.19, 0.12, 0.04, "Spectate", true, tab, "spectate")
     aPlayersTab.SetNick = guiCreateButton(0.74, 0.235, 0.12, 0.04, "Set nick", true, tab, "setnick")
-    aPlayersTab.Admin = guiCreateButton(0.87, 0.235, 0.12, 0.04, "Give admin", true, tab, "setgroup")
+    aPlayersTab.Permissions = guiCreateButton(0.87, 0.235, 0.12, 0.04, "Permissions", true, tab, "setgroup")
     aPlayersTab.SlapOptions = guiCreateComboBox(0.76, 0.28, 0.1, 0.04, "0", true, tab)
     local width, height = guiGetSize(aPlayersTab.SlapOptions, false)
     for i = 0, 200, 20 do
@@ -193,7 +193,7 @@ function aPlayersTab.onClientClick(button)
                 elseif (source == aPlayersTab.Spectate) then
                     aSpectate(player)
                 elseif (source == aPlayersTab.SetNick) then
-                    local nick = inputBox("Set nick", "Enter new nickname for " .. name)
+                    local nick = inputBox("Set nick", "Enter new nickname for " .. name, name)
                     if (nick) then
                         triggerServerEvent("aPlayer", localPlayer, player, "setnick", nick)
                     end
@@ -257,14 +257,11 @@ function aPlayersTab.onClientClick(button)
                     end
                 elseif (source == aPlayersTab.WarpPlayer) then
                     aPlayerWarp(player)
-                elseif (source == aPlayersTab.Admin) then
-                    if
-                        (aPlayers[player]["admin"] and
-                            messageBox("Revoke admin rights from " .. name .. "?", MB_WARNING))
-                     then
-                        triggerServerEvent("aPlayer", localPlayer, player, "setgroup", false)
-                    elseif (messageBox("Give admin rights to " .. name .. "?", MB_WARNING)) then
-                        triggerServerEvent("aPlayer", localPlayer, player, "setgroup", true)
+                elseif (source == aPlayersTab.Permissions) then
+                    if (aPlayers[player]['account'] ~= 'guest') then
+                        aPermissions.Show(player)
+                    else
+                        messageBox("This player is not logged in!", MB_ERROR, MB_ERROR)
                     end
                 end
             end
@@ -298,7 +295,6 @@ function aPlayersTab.onClientClick(button)
                 guiSetText(aPlayersTab.Groups, "Groups: N/A")
                 guiSetText(aPlayersTab.Mute, "Mute")
                 guiSetText(aPlayersTab.Freeze, "Freeze")
-                guiSetText(aPlayersTab.Admin, "Give admin")
                 guiSetText(aPlayersTab.Health, "Health: 0%")
                 guiSetText(aPlayersTab.Armour, "Armour: 0%")
                 guiSetText(aPlayersTab.Skin, "Skin: N/A")

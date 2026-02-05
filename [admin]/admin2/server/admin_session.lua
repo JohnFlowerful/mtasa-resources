@@ -12,7 +12,7 @@ local aSessions = {}
 addCommandHandler(
     "adminpanel",
     function(player)
-        if (hasObjectPermissionTo(player, "general.adminpanel")) then
+        if (hasObjectPermissionTo(player, "general.adminpanel", false)) then
             triggerClientEvent(player, "aClientAdminMenu", root)
             aPlayers[player]["chat"] = true
         end
@@ -23,7 +23,7 @@ addEventHandler(
     "onPlayerLogin",
     root,
     function(previous, account, auto)
-        if (hasObjectPermissionTo(source, "general.adminpanel")) then
+        if (hasObjectPermissionTo(source, "general.adminpanel", false)) then
             if (aPlayers[source]["aLoaded"]) then
                 triggerEvent(EVENT_SESSION, source, SESSION_UPDATE)
             end
@@ -37,14 +37,14 @@ addEventHandler(
     root,
     function(type)
         if (type == SESSION_START) then
-            if (aPlayers[source]) then
-                aPlayers[source]["aLoaded"] = true
+            if (aPlayers[client]) then
+                aPlayers[client]["aLoaded"] = true
             end
         end
         if (type == SESSION_UPDATE or type == SESSION_START) then
-            if (hasObjectPermissionTo(source, "general.adminpanel")) then
+            if (hasObjectPermissionTo(client or source, "general.adminpanel", false)) then
                 local tableOut = {}
-                local account = "user." .. getAccountName(getPlayerAccount(source))
+                local account = "user." .. getAccountName(getPlayerAccount(client or source))
                 for gi, group in ipairs(aclGroupList()) do
                     for oi, object in ipairs(aclGroupListObjects(group)) do
                         if ((object == account) or (object == "user.*")) then
@@ -61,7 +61,7 @@ addEventHandler(
                         end
                     end
                 end
-                triggerClientEvent(source, EVENT_SESSION, source, tableOut)
+                triggerClientEvent(client or source, EVENT_SESSION, client or source, tableOut)
             end
         end
     end

@@ -698,18 +698,18 @@ end
 addEvent("assaultClientScriptLoaded",true)
 addEventHandler('assaultClientScriptLoaded', root,
 	function()
-		setElementDataLocal( source, "assaultClientScriptLoaded", true )
-		if (assaultClientScriptQueue[source] == nil) then return end
-		for k,v in ipairs(assaultClientScriptQueue[source]) do
-			--outputConsole("Triggering queued event '"..v.eventName.."'",source)
-			triggerClientEvent( source, v.eventName, source, v.parameter )
+		setElementDataLocal( client, "assaultClientScriptLoaded", true )
+		if (assaultClientScriptQueue[client] == nil) then return end
+		for k,v in ipairs(assaultClientScriptQueue[client]) do
+			--outputConsole("Triggering queued event '"..v.eventName.."'",client)
+			triggerClientEvent( client, v.eventName, client, v.parameter )
 		end
-		assaultClientScriptQueue[source] = {}
+		assaultClientScriptQueue[client] = {}
 	end
 )
 addEventHandler("onPlayerQuit", root,
 	function()
-		assaultClientScriptQueue[source] = {}
+		assaultClientScriptQueue[source] = nil
 	end
 )
 
@@ -944,21 +944,6 @@ function createHelpText()
 	return helpTable
 end
 
-function onPlayerChat( message, theType )
-	if theType == 0 then
-		cancelEvent()
-		message = string.gsub(message, "#%x%x%x%x%x%x", "")
-		local team = getPlayerTeam( source )
-		local playerName = getPlayerName( source )
-		if (team) then
-			local r,g,b = getTeamColor(team)
-			outputChatBox( playerName..":#FFFFFF "..message,root,r,g,b, true )
-		else
-			outputChatBox( playerName..": "..message )
-		end
-		outputServerLog( "CHAT: " .. playerName .. ": " .. message )
-	end
-end
 
 
 function onPlayerJoin ()
@@ -1524,7 +1509,6 @@ addEventHandler( "onPlayerSpawn", root, onPlayerSpawn )
 addEventHandler( "onPlayerWasted", root, onPlayerWasted )
 addEventHandler( "onPlayerJoin", root, onPlayerJoin )
 addEventHandler( "onPlayerQuit", root, onPlayerQuit )
-addEventHandler( "onPlayerChat", root, onPlayerChat )
 
 -- Vehicle Events
 addEventHandler ( "onVehicleEnter", root, onVehicleEnter )

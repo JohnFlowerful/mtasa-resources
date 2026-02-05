@@ -62,6 +62,14 @@ guiLanguage.arabic = {
         warning = "تحذير!",
         error = "خلل!"
     },
+
+    --Warning button strings
+    warningButtons = {
+        yes = "نعم",
+        no = "لا",
+        ok = "حسناً",
+    },
+
     --Strings for the buttons at the top
     menubar = {
         handling = "وزانية",
@@ -120,7 +128,7 @@ guiLanguage.arabic = {
                 textlabel = "مرحبا بكم في معدل وزانيات MTA الرسمي ! يتيح لك هذا المورد تعديل تعامل أي سيارة في اللعبة في الوقت الفعلي . \n \n "..
                             "يمكنك حفظ و تحميل وزانيات التي صممتها باستعمال قائمة وزانية في الجانب العلوي الايمن \n \n "..
                             "للمزيد من المعلومات حول معدل الوزنيات - مثل التغيير الرسمي - زر:",
-                websitebox = "http://github.com/hedit/hedit",
+                websitebox = "https://github.com/multitheftauto/mtasa-resources/tree/master/%5Bgameplay%5D/hedit",
                 morelabel = "شكرا لك لاستخدامك ل Hedit"
             }
         },
@@ -151,13 +159,14 @@ guiLanguage.arabic = {
             shortname = "محفوظات",
             longname = "حمل او احفظ اعدادات وزانية",
             itemtext = {
-                nameLabel = "اسم",
-                descriptionLabel = "وصف",
                 saveButton = "حفظ",
                 loadButton = "حمل",
+                deleteButton = "حذف",
                 grid = "",
-                nameEdit = "",
-                descriptionEdit = ""
+                nameColumn  ="اسم",
+                modelColumn = "نموذج",
+                nameEdit = "اسم",
+                descriptionEdit = "وصف"
             }
         },
         import = {

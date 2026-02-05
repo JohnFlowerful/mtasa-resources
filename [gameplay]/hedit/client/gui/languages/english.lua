@@ -62,6 +62,14 @@ guiLanguage.english = {
         warning = "Warning!",
         error = "Error!"
     },
+
+    --Warning button strings
+    warningButtons = {
+        yes = "Yes",
+        no = "No",
+        ok = "Ok",
+    },
+
     --Strings for the buttons at the top
     menubar = {
         handling = "Handling",
@@ -120,7 +128,7 @@ guiLanguage.english = {
                 textlabel = "Welcome to the official MTA handling editor! This resource allows you to edit the handling of any vehicle in-game in real time.\n\n"..
                             "You can save and load custom handlings you make through the 'Handling' menu in the top left corner.\n\n"..
                             "For more information about the handling editor - such as the official changelog - visit:",
-                websitebox = "http://github.com/hedit/hedit",
+                websitebox = "https://github.com/multitheftauto/mtasa-resources/tree/master/%5Bgameplay%5D/hedit",
                 morelabel = "\nThank you for choosing hedit!"
             }
         },
@@ -151,14 +159,14 @@ guiLanguage.english = {
             shortname = "Saves",
             longname = "Load or save handling settings.",
             itemtext = {
-                nameLabel = "Name",
-                descriptionLabel = "Description",
                 saveButton = "Save",
                 loadButton = "Load",
                 deleteButton = "Delete",
                 grid = "",
-                nameEdit = "",
-                descriptionEdit = ""
+                nameColumn = "Name",
+                modelColumn = "Model",
+                nameEdit = "Name",
+                descriptionEdit = "Description"
             }
         },
         import = {

@@ -20,6 +20,7 @@ aLastSync = 0
 aResources = {}
 
 local serverPassword = 'None'
+local hasResourceSetting
 
 function guiComboBoxAdjustHeight ( combobox, itemcount )
     if getElementType ( combobox ) ~= "gui-combobox" or type ( itemcount ) ~= "number" then error ( "Invalid arguments @ 'guiComboBoxAdjustHeight'", 2 ) end
@@ -143,6 +144,12 @@ y=y+B  aTab1.VehicleHealth	= guiCreateLabel ( 0.26, y, 0.25, 0.04, "Vehicle Heal
 			if weaponID then
 				aCurrentWeapon = weaponID
 				guiSetText(aTab1.GiveWeapon, "Give: " .. (shortNames[selectedText] or selectedText))
+			else
+				local fallbackWeaponID = getWeaponIDFromName(selectedText)
+				if fallbackWeaponID then
+					aCurrentWeapon = fallbackWeaponID
+					guiSetText(aTab1.GiveWeapon, "Give: " .. (shortNames[selectedText] or selectedText))
+				end
 			end
 		end)
 
@@ -176,12 +183,18 @@ y=y+B  aTab1.VehicleHealth	= guiCreateLabel ( 0.26, y, 0.25, 0.04, "Vehicle Heal
 			if modelID then
 				aCurrentVehicle = modelID
 				guiSetText ( aTab1.GiveVehicle, "Give: "..selectedText )
+			else
+				local fallbackModelID = getVehicleModelFromName(selectedText)
+				if fallbackModelID then
+					aCurrentVehicle = fallbackModelID
+					guiSetText ( aTab1.GiveVehicle, "Give: "..selectedText )
+				end
 			end
 		end)
 
 		aTab2 = {}
 		aTab2.Tab			= guiCreateTab ( "Resources", aTabPanel, "resources" )
-		aTab2.ManageACL		= guiCreateButton ( 0.75, 0.02, 0.23, 0.04, "Manage ACL", true, aTab2.Tab )
+		aTab2.ManageACL		= guiCreateButton ( 0.75, 0.02, 0.23, 0.04, "Manage ACL", true, aTab2.Tab, "aclmanager" )
 		aTab2.ResourceListSearch = guiCreateEdit ( 0.03, 0.05, 0.31, 0.04, "", true, aTab2.Tab )
 						  guiCreateStaticImage ( 0.34, 0.05, 0.035, 0.04, "client\\images\\search.png", true, aTab2.Tab )
 		aTab2.ResourceList	= guiCreateGridList ( 0.03, 0.10, 0.35, 0.80, true, aTab2.Tab )
@@ -194,6 +207,7 @@ y=y+B  aTab1.VehicleHealth	= guiCreateLabel ( 0.26, y, 0.25, 0.04, "Vehicle Heal
 		aTab2.ResourceInclMaps	= guiCreateCheckBox ( 0.03, 0.91, 0.15, 0.04, "Include Maps", false, true, aTab2.Tab )
 		aTab2.ResourceRefresh	= guiCreateButton ( 0.20, 0.915, 0.18, 0.04, "Refresh list", true, aTab2.Tab, "listresources" )
 		aTab2.ResourceSettings	= guiCreateButton ( 0.40, 0.05, 0.20, 0.04, "Settings", true, aTab2.Tab )
+		guiSetVisible ( aTab2.ResourceSettings, false)
 		aTab2.ResourceStart	= guiCreateButton ( 0.40, 0.10, 0.20, 0.04, "Start", true, aTab2.Tab, "start" )
 		aTab2.ResourceRestart	= guiCreateButton ( 0.40, 0.15, 0.20, 0.04, "Restart", true, aTab2.Tab, "restart" )
 		aTab2.ResourceStop	= guiCreateButton ( 0.40, 0.20, 0.20, 0.04, "Stop", true, aTab2.Tab, "stop" )
@@ -267,7 +281,7 @@ y=y+B  aTab1.VehicleHealth	= guiCreateLabel ( 0.26, y, 0.25, 0.04, "Vehicle Heal
 		aTab3.FPSCurrent	= guiCreateLabel ( 0.05, 0.65, 0.25, 0.04, "FPS Limit: 38", true, aTab3.Tab )
 		aTab3.FPS			= guiCreateEdit ( 0.35, 0.65, 0.135, 0.04, "38", true, aTab3.Tab )
 		aTab3.FPSSet		= guiCreateButton ( 0.50, 0.65, 0.10, 0.04, "Set", true, aTab3.Tab, "setfpslimit" )
-							guiCreateLabel ( 0.63, 0.65, 0.1, 0.04, "( 25-32767 )", true, aTab3.Tab )
+							guiCreateLabel ( 0.63, 0.65, 0.12, 0.04, "( 25-32767 )", true, aTab3.Tab )
 
 
 		aTab4 = {}
@@ -339,20 +353,20 @@ y=y+B  aTab1.VehicleHealth	= guiCreateLabel ( 0.26, y, 0.25, 0.04, "Vehicle Heal
 						  guiCreateLabel ( 0.08, 0.15, 0.40, 0.04, "This might be useful to copy player data", true, aTab6.Tab )
 		aTab6.AdminChatOutput 	= guiCreateCheckBox ( 0.05, 0.20, 0.47, 0.04, "Output admin messages to chat box", false, true, aTab6.Tab )
 						  guiCreateHeader (  0.03, 0.30, 0.47, 0.04, "Appearance:", true, aTab6.Tab )
-						  guiCreateHeader ( 0.63, 0.05, 0.10, 0.05, "Account:", true, aTab6.Tab )
-		aTab6.AutoLogin		= guiCreateCheckBox ( 0.65, 0.10, 0.47, 0.04, "Auto-login by serial", false, true, aTab6.Tab )
-						  guiSetVisible ( aTab6.AutoLogin, false )	-- Not used
-						  guiCreateHeader ( 0.63, 0.15, 0.25, 0.05, "Change Password:", true, aTab6.Tab )
-						  guiCreateLabel ( 0.65, 0.20, 0.15, 0.05, "Old password:", true, aTab6.Tab )
-						  guiCreateLabel ( 0.65, 0.25, 0.15, 0.05, "New password:", true, aTab6.Tab )
-						  guiCreateLabel ( 0.65, 0.30, 0.15, 0.05, "Confirm:", true, aTab6.Tab )
-		aTab6.PasswordOld		= guiCreateEdit ( 0.80, 0.20, 0.15, 0.045, "", true, aTab6.Tab )
-		aTab6.PasswordNew		= guiCreateEdit ( 0.80, 0.25, 0.15, 0.045, "", true, aTab6.Tab )
-		aTab6.PasswordConfirm	= guiCreateEdit ( 0.80, 0.30, 0.15, 0.045, "", true, aTab6.Tab )
+						--   guiCreateHeader ( 0.63, 0.05, 0.10, 0.05, "Account:", true, aTab6.Tab )
+		-- aTab6.AutoLogin		= guiCreateCheckBox ( 0.65, 0.10, 0.47, 0.04, "Auto-login by serial", false, true, aTab6.Tab )
+		-- 				  guiSetVisible ( aTab6.AutoLogin, false )	-- Not used
+						  guiCreateHeader ( 0.63, 0.05, 0.25, 0.05, "Change Password:", true, aTab6.Tab )
+						  guiCreateLabel ( 0.65, 0.10, 0.15, 0.05, "Old password:", true, aTab6.Tab )
+						  guiCreateLabel ( 0.65, 0.15, 0.15, 0.05, "New password:", true, aTab6.Tab )
+						  guiCreateLabel ( 0.65, 0.20, 0.15, 0.05, "Confirm:", true, aTab6.Tab )
+		aTab6.PasswordOld		= guiCreateEdit ( 0.80, 0.10, 0.15, 0.045, "", true, aTab6.Tab )
+		aTab6.PasswordNew		= guiCreateEdit ( 0.80, 0.15, 0.15, 0.045, "", true, aTab6.Tab )
+		aTab6.PasswordConfirm	= guiCreateEdit ( 0.80, 0.20, 0.15, 0.045, "", true, aTab6.Tab )
 						  guiEditSetMasked ( aTab6.PasswordOld, true )
 						  guiEditSetMasked ( aTab6.PasswordNew, true )
 						  guiEditSetMasked ( aTab6.PasswordConfirm, true )
-		aTab6.PasswordChange	= guiCreateButton ( 0.85, 0.35, 0.10, 0.04, "Accept", true, aTab6.Tab )
+		aTab6.PasswordChange	= guiCreateButton ( 0.85, 0.25, 0.10, 0.04, "Accept", true, aTab6.Tab )
 						  guiCreateHeader ( 0.03, 0.65, 0.20, 0.055, "Performance:", true, aTab6.Tab )
 						  guiCreateStaticImage ( 0.03, 0.69, 0.94, 0.0025, "client\\images\\dot.png", true, aTab6.Tab )
 						  guiCreateLabel ( 0.05, 0.71, 0.20, 0.055, "Performance priority:", true, aTab6.Tab )
@@ -969,7 +983,9 @@ end
 function aClientDoubleClick ( button )
 	if ( source == aTab2.ResourceList ) then
 		if ( guiGridListGetSelectedItem ( aTab2.ResourceList ) ~= -1 ) then
-			aManageSettings ( guiGridListGetItemText ( aTab2.ResourceList, guiGridListGetSelectedItem( aTab2.ResourceList ), 1 ) )
+			if hasResourceSetting then
+				aManageSettings ( guiGridListGetItemText ( aTab2.ResourceList, guiGridListGetSelectedItem( aTab2.ResourceList ), 1 ) )
+			end
 		end
 	elseif ( source == aTab4.BansList ) then
 		if ( guiGridListGetSelectedItem ( aTab4.BansList ) == -1 ) then
@@ -1059,6 +1075,10 @@ function aClientClick ( button )
 			elseif ( source == aTab2.ResourceList ) then
 				guiSetVisible ( aTab2.ResourceFailture, false )
 				if ( guiGridListGetSelectedItem ( aTab2.ResourceList ) ~= -1 ) then
+					local resName = guiGridListGetItemText(aTab2.ResourceList, guiGridListGetSelectedItem( aTab2.ResourceList ), 1)
+					if resName then
+						triggerServerEvent("aAdmin", localPlayer, "resourcelist", resName)
+					end
 					guiSetText(aTab2.ResourceName, "Full Name: " .. guiGridListGetItemText(aTab2.ResourceList, guiGridListGetSelectedItem ( aTab2.ResourceList ), 4))
 					guiSetText(aTab2.ResourceAuthor, "Author: " .. guiGridListGetItemText(aTab2.ResourceList, guiGridListGetSelectedItem ( aTab2.ResourceList ), 5))
 					guiSetText(aTab2.ResourceVersion, "Version: " .. guiGridListGetItemText(aTab2.ResourceList, guiGridListGetSelectedItem ( aTab2.ResourceList ), 6))
@@ -1169,8 +1189,8 @@ function aClientClick ( button )
 				end
 			elseif ( source == aTab6.PerformanceAdvanced ) then
 				aPerformance()
-			elseif ( source == aTab6.AutoLogin ) then
-				triggerServerEvent ( "aAdmin", localPlayer, "autologin", guiCheckBoxGetSelected ( aTab6.AutoLogin ) )
+			-- elseif ( source == aTab6.AutoLogin ) then
+			-- 	triggerServerEvent ( "aAdmin", localPlayer, "autologin", guiCheckBoxGetSelected ( aTab6.AutoLogin ) )
 			--elseif ( source == aTab6.PasswordOld ) then
 
 			--elseif ( source == aTab6.PasswordNew ) then
@@ -1191,6 +1211,17 @@ function aClientClick ( button )
 		end
 	end
 end
+
+addEvent ("setVisibilityOfSettingsButton", true)
+function setVisibilityOfSettingsButton (showResourceSetting)
+	hasResourceSetting = showResourceSetting
+	if hasResourceSetting then
+		guiSetVisible(aTab2.ResourceSettings, true)
+	else
+		guiSetVisible(aTab2.ResourceSettings, false)
+	end
+end
+addEventHandler ( "setVisibilityOfSettingsButton", resourceRoot, setVisibilityOfSettingsButton)
 
 function aClientRender ()
 	if ( guiGetVisible ( aAdminForm ) ) then
@@ -1377,7 +1408,7 @@ end
 
 function setAnonAdmin( bOn )
 	guiCheckBoxSetSelected ( aTab1.AnonAdmin, bOn )
-	setElementData( localPlayer, "AnonAdmin", bOn )
+	triggerServerEvent("aAdmin", localPlayer, "adminpanel", "updateAnonymous", bOn)
 	aSetSetting ( "currentAnonState", bOn )
 end
 

@@ -37,7 +37,7 @@ enum(
         "EVENT_RESOURCE",
         "EVENT_SERVER",
         "EVENT_MESSAGE",
-        "EVENT_BANS",
+        "EVENT_BAN",
         "EVENT_NETWORK",
         "EVENT_PROXY",
         "EVENT_ADMIN_CHAT",
@@ -46,7 +46,8 @@ enum(
         "EVENT_SCREEN_SHOT",
         "EVENT_RESOURCE_START",
         "EVENT_RESOURCE_STOP",
-        "EVENT_PLAYER_JOIN"
+        "EVENT_PLAYER_JOIN",
+        "EVENT_ANONYMOUS_UPDATE"
     },
     "ae"
 )
@@ -62,6 +63,7 @@ enum(
         "SYNC_RESOURCE",
         "SYNC_ADMINS",
         "SYNC_SERVER",
+        "SYNC_BAN",
         "SYNC_BANS",
         "SYNC_MESSAGES"
     },

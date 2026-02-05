@@ -57,12 +57,20 @@ guiLanguage.portuguese = {
     --
 
     --Warning level strings
-    -- warningtitles = {
-    --     info = "Informação",
-    --     question = "Pergunta",
-    --     warning = "Aviso!",
-    --     error = "Erro!"
-    -- },
+    warningtitles = {
+        info = "Informação",
+        question = "Pergunta",
+        warning = "Aviso!",
+        error = "Erro!"
+    },
+
+    --Warning button strings
+    warningButtons = {
+        yes = "Sim",
+        no = "Não",
+        ok = "OK",
+    },
+
     --Strings for the buttons at the top
     menubar = {
         handling = "Handling",
@@ -121,7 +129,7 @@ guiLanguage.portuguese = {
                 textlabel = "Bem-vindo ao editor de Handling oficial do MTA! Esse recurso permite que você edite a handling de qualquer veículo em tempo real no jogo.\n\n"..
                             "Você pode salvar e carregar handlings personalizadas através do menu 'Handling' no canto superior esquerdo.\n\n"..
                             "Para obter mais informações sobre o Editor de Handling - como o registro de alterações oficial - visite:",
-                websitebox = "http://github.com/hedit/hedit",
+                websitebox = "https://github.com/multitheftauto/mtasa-resources/tree/master/%5Bgameplay%5D/hedit",
                 morelabel = "\nObrigado por escolher o hedit!"
             }
         },
@@ -152,14 +160,14 @@ guiLanguage.portuguese = {
             shortname = "Saves",
             longname = "Carregar ou salvar configurações de handling.",
             itemtext = {
-                nameLabel = "Nome",
-                descriptionLabel = "Descrição",
                 saveButton = "Salvar",
                 loadButton = "Carregar",
                 deleteButton = "Excluir",
                 grid = "",
-                nameEdit = "",
-                descriptionEdit = ""
+                nameColumn = "Nome",
+                modelColumn = "Modelo",
+                nameEdit = "Nome",
+                descriptionEdit = "Descrição"
             }
         },
         import = {

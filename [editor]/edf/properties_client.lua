@@ -17,13 +17,53 @@ propertyGetters = {
 			else
 				return "false"
 			end
+		end,
+		moveSpeed = function(element)
+			local time = getElementData(element, "moveSpeed")
+			if time == nil or time == false then
+				return 1
+			else
+				return time
+			end
+		end,
+		moveDelay = function(element)
+			local delay = getElementData(element, "moveDelay")
+			if delay == nil or delay == false then
+				return 0
+			else
+				return delay
+			end
+		end,
+		moveX = function(element)
+			local offsetX = getElementData(element, "moveX")
+			if offsetX == nil or offsetX == false then
+				return 0
+			else
+				return offsetX
+			end
+		end,
+		moveY = function(element)
+			local offsetY = getElementData(element, "moveY")
+			if offsetY == nil or offsetY == false then
+				return 0
+			else
+				return offsetY
+			end
+		end,
+		moveZ = function(element)
+			local offsetZ = getElementData(element, "moveZ")
+			if offsetZ == nil or offsetZ == false then
+				return 0
+			else
+				return offsetZ
+			end
 		end
 	},
 	ped = {
 		model = getElementModel,
 		rotZ = getPedRotation,
 		health = getElementHealth,
-		armor = setPedArmor,
+		armor = getPedArmor,
 		collisions = function(element)
 			local collisions = getElementData(element, "collisions")
 			if collisions == "true" or collisions == false then
@@ -152,9 +192,6 @@ propertySetters = {
 		end,
 		breakable = function(element, breakable)
 			return setObjectBreakable(element, breakable == "true")
-		end,
-		collisions = function(element, state)
-			return setElementCollisionsEnabled(element, state == "true")
 		end
 	},
 	ped = {

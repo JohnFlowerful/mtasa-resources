@@ -17,7 +17,6 @@ aInteriors = {}
 aStats = {}
 aReports = {}
 aWeathers = {}
-aNickChangeTime = {}
 
 local aUnmuteTimerList = {}
 local chatHistory = {}
@@ -34,7 +33,7 @@ function notifyPlayerLoggedIn(player)
 end
 
 function aHandleIP2CUpdate()
-    local playersToUpdate = false
+    local playersToUpdate = nil
     local playersTable = getElementsByType("player") -- cache result, save function call
 
     for playerID = 1, #playersTable do
@@ -54,7 +53,7 @@ function aHandleIP2CUpdate()
 
     for playerID = 1, #playersTable do
         local playerElement = playersTable[playerID]
-        local hasAdminPermission = hasObjectPermissionTo(playerElement, "general.adminpanel")
+        local hasAdminPermission = hasObjectPermissionTo(playerElement, "general.adminpanel", false)
 
         if hasAdminPermission then
             
@@ -90,7 +89,7 @@ addEventHandler ( "onResourceStart", root, function ( resource )
 	if ( resource ~= getThisResource() ) then
 		local resourceName = getResourceName(resource)
 		for id, player in ipairs(getElementsByType("player")) do
-			if ( hasObjectPermissionTo ( player, "general.tab_resources" ) ) then
+			if ( hasObjectPermissionTo ( player, "general.tab_resources", false ) ) then
 				triggerClientEvent ( player, "aClientResourceStart", root, resourceName )
 			end
 		end
@@ -108,7 +107,7 @@ addEventHandler ( "onResourceStart", root, function ( resource )
 	aSetupCommands()
 	for id, player in ipairs ( getElementsByType ( "player" ) ) do
 		aPlayerInitialize ( player )
-		if ( hasObjectPermissionTo ( player, "general.adminpanel" ) ) then
+		if ( hasObjectPermissionTo ( player, "general.adminpanel", false ) ) then
 			notifyPlayerLoggedIn(player)
 		end
 	end
@@ -136,7 +135,7 @@ addEventHandler ( "onResourceStart", root, function ( resource )
 			local stat = xmlFindChild ( node2, "stat", stats )
 			local id = tonumber ( xmlNodeGetAttribute ( stat, "id" ) )
 			local name = xmlNodeGetAttribute ( stat, "name" )
-			aStats[id] = name
+			if (id) then aStats[id] = name end
 			stats = stats + 1
 		end
 		xmlUnloadFile ( node2 )
@@ -148,7 +147,7 @@ addEventHandler ( "onResourceStart", root, function ( resource )
 		local weather = xmlFindChild ( node3, "weather", weathers )
 			local id = tonumber ( xmlNodeGetAttribute ( weather, "id" ) )
 			local name = xmlNodeGetAttribute ( weather, "name" )
-			aWeathers[id] = name
+			if (id) then aWeathers[id] = name end
 			weathers = weathers + 1
 		end
 		xmlUnloadFile ( node3 )
@@ -229,13 +228,9 @@ addEventHandler ( "onResourceStart", root, function ( resource )
 				while ( xmlFindChild ( subnode, "group", groups ) ) do
 					local group = xmlFindChild ( subnode, "group", groups )
 					local action = xmlNodeGetAttribute ( group, "action" )
-					local r = tonumber ( xmlNodeGetAttribute ( group, "r" ) )
-					local g = tonumber ( xmlNodeGetAttribute ( group, "g" ) )
-					local b = tonumber ( xmlNodeGetAttribute ( group, "b" ) )
+					local r, g, b = tonumber ( xmlNodeGetAttribute ( group, "r" ) ), tonumber ( xmlNodeGetAttribute ( group, "g" ) ), tonumber ( xmlNodeGetAttribute ( group, "b" ) )
 					aLogMessages[type][action] = {}
-					aLogMessages[type][action]["r"] = r or 0
-					aLogMessages[type][action]["g"] = g or 255
-					aLogMessages[type][action]["b"] = b or 0
+					aLogMessages[type][action]["r"], aLogMessages[type][action]["g"], aLogMessages[type][action]["b"] = r or 0, g or 255, b or 255
 					if ( xmlFindChild ( group, "all", 0 ) ) then aLogMessages[type][action]["all"] = xmlNodeGetValue ( xmlFindChild ( group, "all", 0 ) ) end
 					if ( xmlFindChild ( group, "admin", 0 ) ) then aLogMessages[type][action]["admin"] = xmlNodeGetValue ( xmlFindChild ( group, "admin", 0 ) ) end
 					if ( xmlFindChild ( group, "player", 0 ) ) then aLogMessages[type][action]["player"] = xmlNodeGetValue ( xmlFindChild ( group, "player", 0 ) ) end
@@ -262,7 +257,7 @@ addEventHandler ( "onResourceStop", root, function ( resource )
 	if ( resource ~= getThisResource() ) then
 		local resourceName = getResourceName(resource)
 		for id, player in ipairs(getElementsByType("player")) do
-			if ( hasObjectPermissionTo ( player, "general.tab_resources" ) ) then
+			if ( hasObjectPermissionTo ( player, "general.tab_resources", false ) ) then
 				triggerClientEvent ( player, "aClientResourceStop", root, resourceName )
 			end
 		end
@@ -347,11 +342,6 @@ function iif ( cond, arg1, arg2 )
 	return arg2
 end
 
-local serialExp = "^" .. string.rep ( "[A-F0-9]", 32 ) .. "$"
-function isValidSerial ( serial )
-	return serial:match ( serialExp )
-end
-
 function getWeatherNameFromID ( weather )
 	return iif ( aWeathers[weather], aWeathers[weather], "Unknown" )
 end
@@ -387,17 +377,17 @@ function aAddUnmuteTimer( player, length )
 	aRemoveUnmuteTimer( player )
 	local serial = getPlayerSerial( player )
 	aUnmuteTimerList[serial] = setTimer(
-								function()
-									aUnmuteTimerList[serial] = nil
-									for _,plr in ipairs(getElementsByType('player')) do
-										if getPlayerSerial(plr) == serial then
-											if isPlayerMuted(plr) then
-												triggerEvent ( "aPlayer", getElementByIndex("console", 0), plr, "mute" )
-											end
-										end
-									end
-								end,
-								length*1000, 1 )
+		function()
+			aUnmuteTimerList[serial] = nil
+			for _,plr in ipairs(getElementsByType('player')) do
+				if getPlayerSerial(plr) == serial then
+					if isPlayerMuted(plr) then
+						triggerEvent ( "aPlayer", getElementByIndex("console", 0), plr, "mute" )
+					end
+				end
+			end
+		end,
+	length*1000, 1 )
 end
 
 function aRemoveUnmuteTimer( player )
@@ -441,8 +431,8 @@ addEventHandler ( "onPlayerJoin", root, function ()
 	end
 	aPlayerInitialize ( source )
 	for id, player in ipairs(getElementsByType("player")) do
-		if ( hasObjectPermissionTo ( player, "general.adminpanel" ) ) then
-			triggerClientEvent ( player, "aClientPlayerJoin", source, getPlayerIP ( source ), getPlayerAccountName ( source ), getPlayerSerial ( source ), hasObjectPermissionTo ( source, "general.adminpanel" ), aPlayers[source]["country"] )
+		if ( hasObjectPermissionTo ( player, "general.adminpanel", false ) ) then
+			triggerClientEvent ( player, "aClientPlayerJoin", source, getPlayerIP ( source ), getPlayerAccountName ( source ), getPlayerSerial ( source ), hasObjectPermissionTo ( source, "general.adminpanel", false ), aPlayers[source]["country"] )
 		end
 	end
 	setPedGravity ( source, getGravity() )
@@ -454,65 +444,45 @@ function updatePlayerCountry ( player )
 	aPlayers[player]["country"] = isIP2CResourceRunning and exports.ip2c:getPlayerCountry ( player ) or false
 end
 
-function aPlayerInitialize ( player )
-	bindKey ( player, "p", "down", "admin" )
-	--callRemote ( "http://community.mtasa.com/mta/verify.php", aPlayerSerialCheck, player, getPlayerSerial ( player ) )
-	aPlayers[player] = {}
-	aPlayers[player]["money"] = getPlayerMoney ( player )
-	updatePlayerCountry ( player )
-	chatHistory[player] = {}
+local serialExp = "^" .. string.rep("[A-F0-9]", 32) .. "$"
+function isValidSerial(serial)
+    return serial:match(serialExp)
+end
+
+function aPlayerInitialize(player)
+    local serial = getPlayerSerial(player)
+
+    if (not isValidSerial(serial)) then
+        outputChatBox("LOG: " .. getPlayerName(player) .. " - Possibly tampered serial. Denied entry.")
+        kickPlayer(player, "5B Client verification mismatch.")
+    end
+
+    bindKey(player, "p", "down", "admin")
+    aPlayers[player] = {}
+    aPlayers[player]["money"] = getPlayerMoney(player)
+
+	local strVersion = getPlayerVersion(player)
+	-- Format it all prettyful
+	local _,_,ver,type,build = string.find ( strVersion, "(.*)-([0-9])%.(.*)" )
+
+	aPlayers[player]["version"] = ver .. ( type < '9' and " pre  " or "  " ) .. "(" .. type .. "." .. build .. ")"
+
+    updatePlayerCountry(player)
+    chatHistory[player] = {}
 end
 
 addEventHandler ( "onPlayerQuit", root, function ()
 	aPlayers[source] = nil
-	aNickChangeTime[source] = nil
 	chatHistory[source] = nil
 end )
 
-addEvent ( "aPlayerVersion", true )
-addEventHandler ( "aPlayerVersion", root, function ( version )
-	if checkClient( false, source, 'aPlayerVersion' ) then return end
-	local bIsPre = false
-	-- If not Release, mark as 'pre'
-	if version.type:lower() ~= "release" then
-		bIsPre = true
-	else
-		-- Extract rc version if there
-		local _,_,rc = string.find( version.tag or "", "(%d)$" )
-		rc = tonumber(rc) or 0
-		-- If release, but before final rc, mark as 'pre'
-		if version.mta == "1.0.2" and rc > 0 and rc < 13 then
-			bIsPre = true
-		elseif version.mta == "1.0.3" and rc < 9 then
-			bIsPre = true
-		end
-		-- If version does not have a built in version check, maybe show a message box advising an upgrade
-		if version.number < 259 or ( version.mta == "1.0.3" and rc < 3 ) then
-			triggerClientEvent ( source, "aClientShowUpgradeMessage", source )
-		end
-	end
-
-	-- Try to get new player version
-	local playerVersion
-	if getPlayerVersion then
-		playerVersion = getPlayerVersion(client)
-	else
-		playerVersion = version.mta .. "-" .. ( bIsPre and "7" or "9" ) .. ".00000.0"
-	end
-
-	-- Format it all prettyful
-	local _,_,ver,type,build = string.find ( playerVersion, "(.*)-([0-9])%.(.*)" )
-	if aPlayers[source] then
-		aPlayers[source]["version"] = ver .. ( type < '9' and " pre  " or "  " ) .. "(" .. type .. "." .. build .. ")"
-	end
-end )
 
 function aPlayerSerialCheck ( player, result )
 	if ( result == 0 ) then kickPlayer ( player, "Invalid serial" ) end
 end
 
 addEventHandler ( "onPlayerLogin", root, function ( previous, account, auto )
-	if ( hasObjectPermissionTo ( source, "general.adminpanel" ) ) then
+	if ( hasObjectPermissionTo ( source, "general.adminpanel", false ) ) then
 		triggerEvent ( "aPermissions", source )
 		notifyPlayerLoggedIn( source )
 	end
@@ -545,7 +515,7 @@ end )
 addCommandHandler ( "unregister", function ( player, command, arg1 )
 	local username = arg1 or ""
 	local result = "failed - No permission"
-	if ( hasObjectPermissionTo ( player, "function.removeAccount" ) ) then
+	if ( hasObjectPermissionTo ( player, "function.removeAccount", false ) ) then
 		local account = getAccount ( username )
 		if not account then
 			result = "failed - Does not exist"
@@ -574,7 +544,7 @@ function getAdminNameForLog(player)
 end
 
 function aAdminMenu ( player, command )
-	if ( hasObjectPermissionTo ( player, "general.adminpanel" ) ) then
+	if ( hasObjectPermissionTo ( player, "general.adminpanel", false ) ) then
 		triggerClientEvent ( player, "aClientAdminMenu", root )
 		aPlayers[player]["chat"] = true
 	end
@@ -608,9 +578,9 @@ function aAction ( type, action, admin, player, data, more )
 
         if ( node ) then
             local r, g, b = node["r"], node["g"], node["b"]
-            if ( node["all"] ) then outputChatBox ( aStripString ( node["all"] ), root, r, g, b ) end
-            if ( node["admin"] ) and ( admin ~= player ) then outputChatBox ( aStripString ( node["admin"] ), admin, r, g, b ) end
-            if ( node["player"] ) then outputChatBox ( aStripString ( node["player"] ), player, r, g, b ) end
+            if ( node["all"] ) then outputChatBox ( aStripString ( node["all"] ), root, r, g, b, true ) end
+            if ( node["admin"] ) and ( admin ~= player ) then outputChatBox ( aStripString ( node["admin"] ), admin, r, g, b, true ) end
+            if ( node["player"] ) then outputChatBox ( aStripString ( node["player"] ), player, r, g, b, true ) end
             if ( node["log"] ) then outputServerLog ( aStripString ( node["log"] ) ) end
         end
     end
@@ -618,7 +588,7 @@ end
 
 -- Should admin name be hidden from public chatbox message?
 function isAnonAdmin4All ( admin )
-	return getElementData( admin, "AnonAdmin" ) == true
+	return aPlayers[admin] and aPlayers[admin]["AnonymousAdmin"] or false
 end
 
 -- Should admin name be hidden from private chatbox message?
@@ -631,7 +601,7 @@ addEventHandler ( "aTeam", root, function ( action, name, r, g, b )
 	if checkClient( "command."..action, source, 'aTeam', action ) then
 		return
 	end
-	if ( hasObjectPermissionTo ( client or source, "command."..action ) ) then
+	if ( hasObjectPermissionTo ( client or source, "command."..action, false ) ) then
 		mdata = ""
 		if ( action == "createteam" ) then
 			local success
@@ -663,9 +633,23 @@ addEventHandler ( "aTeam", root, function ( action, name, r, g, b )
 	return false
 end )
 
+local aAdminRights = {
+	["settings"] = "general.tab_resources",
+	["resourcelist"] = "general.tab_resources",
+	["adminpanel"] = "general.adminpanel",
+
+	["sync"] = "command.aclmanager",
+	["aclcreate"] = "command.aclcreate",
+	["acldestroy"] = "command.acldestroy",
+	["acladd"] = "command.acladd",
+	["aclremove"] = "command.aclremove",
+}
 addEvent ( "aAdmin", true )
 addEventHandler ( "aAdmin", root, function ( action, ... )
-	if checkClient( true, source, 'aAdmin', action ) then
+	if not action then
+		return
+	end
+	if checkClient( aAdminRights[action] or true, source, 'aAdmin', action ) then
 		return
 	end
 	local mdata, mdata2
@@ -724,6 +708,17 @@ addEventHandler ( "aAdmin", root, function ( action, ... )
 			end
 		end
 		triggerClientEvent ( source, "aAdminSettings", root, cmd, resName, tableOut )
+	elseif (action == "resourcelist") then
+		local resName = arg[1]
+		local count = true
+		_, count = aGetResourceSettings(resName, count)
+		if count then
+			local hasResourceSetting
+			if count ~= 0 then
+				hasResourceSetting = true
+			end
+			triggerClientEvent ( source, "setVisibilityOfSettingsButton", resourceRoot, hasResourceSetting)
+		end
 	elseif ( action == "sync" ) then
 		local type = arg[1]
 		local tableOut = {}
@@ -883,6 +878,13 @@ addEventHandler ( "aAdmin", root, function ( action, ... )
 				end
 			end
 		end
+	elseif ( action == "adminpanel" ) then
+		local cmd = arg[1]
+
+		if cmd == "updateAnonymous" then
+			local state = arg[2]
+			aPlayers[client]["AnonymousAdmin"] = state
+		end
 	end
 end )
 
@@ -930,14 +932,14 @@ addEventHandler ( "aPlayer", root, function ( player, action, data, additional, 
 	if not isElement( player ) then
 		return	-- Ignore if player is no longer valid
 	end
-	if ( hasObjectPermissionTo ( client or source, "command."..action ) ) then
+	if ( hasObjectPermissionTo ( client or source, "command."..action, false ) ) then
 		local admin = source
 		local mdata = ""
 		local more = ""
 		if ( action == "kick" ) then
 			local reason = data or ""
 			mdata = reason~="" and ( "(" .. reason .. ")" ) or ""
-			local isAnonAdmin = getElementData(source, "AnonAdmin")
+			local isAnonAdmin = isAnonAdmin4All(source)
 			if isAnonAdmin then
 				setTimer ( kickPlayer, 100, 1, player, "Anonymous admin", reason )
 			else
@@ -947,7 +949,7 @@ addEventHandler ( "aPlayer", root, function ( player, action, data, additional, 
 			local reason = data or ""
 			local seconds = tonumber(additional) and tonumber(additional) > 0 and tonumber(additional)
 			local bUseSerial = additional2
-			local isAnonAdmin = getElementData(source, "AnonAdmin")
+			local isAnonAdmin = isAnonAdmin4All(source)
 			mdata = reason~="" and ( "(" .. reason .. ")" ) or ""
 			more = seconds and ( "(" .. secondsToTimeDesc(seconds) .. ")" ) or ""
 			if bUseSerial and getPlayerName ( player ) and not isAnonAdmin then
@@ -1010,7 +1012,7 @@ addEventHandler ( "aPlayer", root, function ( player, action, data, additional, 
 		elseif ( action == "shout" ) then
 			local textDisplay = textCreateDisplay ()
 			local textItem
-			local anon = getElementData( admin, "AnonAdmin" )
+			local anon = isAnonAdmin4All( admin )
 			if (anon) then
 				textItem = textCreateTextItem ( "ADMIN:\n\n"..data, 0.5, 0.5, 2, 255, 100, 50, 255, 4, "center", "center" )
 			else
@@ -1027,7 +1029,7 @@ addEventHandler ( "aPlayer", root, function ( player, action, data, additional, 
 				if ( not setElementHealth ( player, health ) ) then
 					action = nil
 				end
-				mdata = health
+				mdata = tostring( health )
 			else
 				action = nil
 			end
@@ -1038,14 +1040,14 @@ addEventHandler ( "aPlayer", root, function ( player, action, data, additional, 
 				if ( not setPedArmor ( player, armour ) ) then
 					action = nil
 				end
-				mdata = armour
+				mdata = tostring( armour )
 			else
 				action = nil
 			end
 		elseif ( action == "setskin" ) then
 			data = tonumber ( data )
 			if ( setElementModel( player, data) ) then
-				mdata = data
+				mdata = tostring( data )
 			else
 				action = nil
 				outputChatBox( "Invalid skin ID", source, 255, 0, 0 )
@@ -1112,7 +1114,7 @@ addEventHandler ( "aPlayer", root, function ( player, action, data, additional, 
 				if ( not setElementDimension ( player, dimension ) ) then
 					action = nil
 				end
-				mdata = dimension
+				mdata = tostring( dimension )
 			else
 				action = nil
 			end
@@ -1144,7 +1146,7 @@ addEventHandler ( "aPlayer", root, function ( player, action, data, additional, 
 						action = "adminr"
 					end
 					for id, p in ipairs ( getElementsByType ( "player" ) ) do
-						if ( hasObjectPermissionTo ( p, "general.adminpanel" ) ) then triggerEvent ( "aSync", p, "admins" ) end
+						if ( hasObjectPermissionTo ( p, "general.adminpanel", false ) ) then triggerEvent ( "aSync", p, "admins" ) end
 					end
 				else
 					outputChatBox ( "Error - Admin group not initialized. Please reinstall admin resource.", source, 255, 0 ,0 )
@@ -1185,7 +1187,7 @@ addEventHandler ( "aPlayer", root, function ( player, action, data, additional, 
 					end
 					local x, y, z = getElementVelocity ( player )
 					setElementVelocity ( player, x , y, z + 0.2 )
-					mdata = slap
+					mdata = tostring( slap )
 				else
 					action = nil
 				end
@@ -1239,7 +1241,7 @@ end
 addEvent ( "aVehicle", true )
 addEventHandler ( "aVehicle", root, function ( player, action, data )
 	if checkClient( "command."..action, source, 'aVehicle', action ) then return end
-	if ( hasObjectPermissionTo ( client or source, "command."..action ) ) then
+	if ( hasObjectPermissionTo ( client or source, "command."..action, false ) ) then
 		if ( not player ) then return end
 		local vehicle = getPedOccupiedVehicle ( player )
 		if ( vehicle ) then
@@ -1323,7 +1325,7 @@ addEvent ( "aResource", true )
 addEventHandler ( "aResource", root, function ( name, action )
 	if checkClient( "command."..action, source, 'aResource', action ) then return end
 	local pname = getPlayerName ( source )
-	if ( hasObjectPermissionTo ( client or source, "command."..action ) ) then
+	if ( hasObjectPermissionTo ( client or source, "command."..action, false ) ) then
 		local text = ""
 		if ( action == "start" ) then
 			if ( startResource ( getResourceFromName ( name ), true ) ) then
@@ -1361,7 +1363,7 @@ end )
 addEvent ( "aServer", true )
 addEventHandler ( "aServer", root, function ( action, data, data2 )
 	if checkClient( "command."..action, source, 'aServer', action ) then return end
-	if ( hasObjectPermissionTo ( client or source, "command."..action ) ) then
+	if ( hasObjectPermissionTo ( client or source, "command."..action, false ) ) then
 		local mdata = tostring ( data )
 		local mdata2 = ""
 		if ( action == "setgame" ) then
@@ -1453,6 +1455,7 @@ addEventHandler ( "aServer", root, function ( action, data, data2 )
 end )
 
 addEventHandler ( "onPlayerChat", root, function ( message )
+	if not isElement(source) then return end
 	local size = #chatHistory[source]
 	if ( size == g_Prefs.maxchatmsgs ) then
 		table.remove( chatHistory[source], 1 )
@@ -1485,6 +1488,8 @@ function ( action, data )
 		return
 	end
 	if ( action == "new" ) then
+		--dont allow creating reports when reports are disabled
+		if ( get("reportsEnabled") ~= "true" ) then return end
 		local time = getRealTime()
 		local id = #aReports + 1
 		aReports[id] = {}
@@ -1509,7 +1514,7 @@ function ( action, data )
 		aReports[id].read = false
 		-- PM all admins to say a new message has arrived
 		for _, p in ipairs ( getElementsByType ( "player" ) ) do
-			if ( hasObjectPermissionTo ( p, "general.adminpanel" ) ) then
+			if ( hasObjectPermissionTo ( p, "general.adminpanel", false ) ) then
 				outputChatBox( "New Admin message from " .. aReports[id].author .. " (" .. aReports[id].subject .. ")", p, 255, 0, 0 )
 			end
 		end
@@ -1518,9 +1523,9 @@ function ( action, data )
 			table.remove( aReports, 1 )
 		end
 	end
-	if ( hasObjectPermissionTo ( client or source, "general.adminpanel" ) ) then
+	if ( hasObjectPermissionTo ( client or source, "general.adminpanel", false ) ) then
 		if ( action == "get" ) then
-			triggerClientEvent ( source, "aMessage", source, "get", aReports )
+			triggerClientEvent ( source, "aMessage", source, "get", aReports, get("reportsEnabled") )
 		elseif ( action == "read" ) then
 			if ( aReports[data] ) then
 				aReports[data].read = true
@@ -1534,7 +1539,7 @@ function ( action, data )
 		end
 	end
 	for id, p in ipairs ( getElementsByType ( "player" ) ) do
-		if ( hasObjectPermissionTo ( p, "general.adminpanel" ) ) then
+		if ( hasObjectPermissionTo ( p, "general.adminpanel", false ) ) then
 			triggerEvent ( "aSync", p, "messages" )
 		end
 	end
@@ -1543,8 +1548,9 @@ end
 
 addEvent ( "aModdetails", true )
 addEventHandler ( "aModdetails", resourceRoot, function ( action, player )
+	if source ~= resourceRoot then return end
 	if checkClient( false, client, 'aModdetails', action ) then return end
-	if ( hasObjectPermissionTo ( client, "general.adminpanel" ) ) then
+	if ( hasObjectPermissionTo ( client, "general.adminpanel", false ) ) then
 		if ( action == "get" ) then
 			triggerClientEvent ( client, "aModdetails", resourceRoot, "get", getPlayerModInfo(player), player )
 		end
@@ -1554,7 +1560,7 @@ end )
 addEvent ( "aBans", true )
 addEventHandler ( "aBans", root, function ( action, data, arg1, arg2, arg3 )
 	if checkClient( "command."..action, source, 'aBans', action ) then return end
-	if ( hasObjectPermissionTo ( client or source, "command."..action ) ) then
+	if ( hasObjectPermissionTo ( client or source, "command."..action, false ) ) then
 		local mdata = ""
 		local more = ""
 		if ( action == "banip" ) then
@@ -1631,6 +1637,7 @@ addCommandHandler(get("adminChatCommandName"),
 
 addEventHandler('onElementDataChange', root,
 	function(dataName, oldValue )
+		if dataName == "superman:flying" or dataName == "hedit:saved" then return end
 		if getElementType(source)=='player' and checkClient( false, source, 'onElementDataChange', dataName ) then
 			setElementData( source, dataName, oldValue )
 			return
@@ -1640,30 +1647,34 @@ addEventHandler('onElementDataChange', root,
 
 -- returns true if there is trouble
 function checkClient(checkAccess,player,...)
-	if client and client ~= player and g_Prefs.securitylevel >= 2 then
+	if client and client ~= player then
 		local desc = table.concat({...}," ")
 		local ipAddress = getPlayerIP(client)
+		local playerSerial = getPlayerSerial(client)
+		local banReason = "admin checkClient (" .. tostring(desc) .. ")"
 		outputDebugString( "Admin security - Client/player mismatch from " .. tostring(ipAddress) .. " (" .. tostring(desc) .. ")", 1 )
 		cancelEvent()
-		if g_Prefs.clientcheckban then
-			local reason = "admin checkClient (" .. tostring(desc) .. ")"
-			addBan ( ipAddress, nil, nil, root, reason )
+		if g_Prefs.fakePacketsIPban then
+			addBan ( ipAddress, nil, nil, root, banReason, g_Prefs.fakePacketsIPbanLength )
+		end
+		if g_Prefs.fakePacketsSerialban then
+			addBan ( nil, nil, playerSerial, root, banReason, g_Prefs.fakePacketsSerialbanLength )
 		end
 		return true
 	end
 	if checkAccess and g_Prefs.securitylevel >= 1 then
 		if type(checkAccess) == 'string' then
-			if hasObjectPermissionTo ( player, checkAccess ) then
+			if hasObjectPermissionTo ( player, checkAccess, false ) then
 				return false	-- Access ok
 			end
-			if hasObjectPermissionTo ( player, "general.adminpanel" ) then
+			if hasObjectPermissionTo ( player, "general.adminpanel", false ) then
 				local desc = table.concat({...}," ")
 				local ipAddress = getPlayerIP(player)
 				outputDebugString( "Admin security - Client does not have required rights ("..checkAccess.."). " .. tostring(ipAddress) .. " (" .. tostring(desc) .. ")" )
 				return true		-- Low risk fail - Can't do specific command, but has access to admin panel
 			end
 		end
-		if not hasObjectPermissionTo ( player, "general.adminpanel" ) then
+		if not hasObjectPermissionTo ( player, "general.adminpanel", false ) then
 			local desc = table.concat({...}," ")
 			local ipAddress = getPlayerIP(client or player)
 			outputDebugString( "Admin security - Client without admin panel rights trigged an admin panel event. " .. tostring(ipAddress) .. " (" .. tostring(desc) .. ")", 2 )
@@ -1672,17 +1683,6 @@ function checkClient(checkAccess,player,...)
 	end
 	return false
 end
-
-function checkNickOnChange(old, new)
-	if aNickChangeTime[source] and aNickChangeTime[source] + tonumber(get("*nickChangeDelay")) > getTickCount() then
-		cancelEvent()
-		outputChatBox("You can only change your name once every "..(tonumber(get("*nickChangeDelay"))/1000).." seconds", source, 255, 0, 0)
-		return false
-	else
-		aNickChangeTime[source] = getTickCount()
-	end
-end
-addEventHandler("onPlayerChangeNick", root, checkNickOnChange)
 
 addEventHandler ("onUnban",root,function(theBan,responsibleElement)
 	if isElement(responsibleElement) and getElementType (responsibleElement)=="player" then

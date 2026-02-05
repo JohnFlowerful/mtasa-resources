@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-16"?>
 <meta>
   <info type="map" gamemodes="race" name="Predator Zone" author="erorr404 + Ransom" description="A police boat deathmatch enclosed by rock barriers (barriers made by Ransom)." version="0" />
   <map src="Predator Zone.map" />
@@ -8,5 +7,6 @@
     <setting name="#respawn" value="timelimit" />
     <setting name="#respawntime" value="10" />
     <setting name="#duration" value="300" />
+    <setting name="#vehicle_physics_mode" value="fixed" />
   </settings>
 </meta>
